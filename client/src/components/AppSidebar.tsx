@@ -10,6 +10,9 @@ import {
   User,
   Shield,
   LogOut,
+  CheckCircle2,
+  Layers,
+  GitNetwork,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -103,6 +106,24 @@ const analyticsItems = [
   },
 ];
 
+const scientificItems = [
+  {
+    title: "Scientific Validation",
+    url: "/scientific-validation",
+    icon: CheckCircle2,
+  },
+  {
+    title: "Data Fusion Engine",
+    url: "/data-fusion",
+    icon: Layers,
+  },
+  {
+    title: "Critical Node Planning",
+    url: "/critical-nodes",
+    icon: GitNetwork,
+  },
+];
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
@@ -162,6 +183,29 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {analyticsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                  >
+                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(' ', '-')}`}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Scientific Rigor</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {scientificItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
