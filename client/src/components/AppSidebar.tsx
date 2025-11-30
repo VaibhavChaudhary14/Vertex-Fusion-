@@ -87,6 +87,16 @@ const analyticsItems = [
     icon: Database,
   },
   {
+    title: "Real-Time Optimization",
+    url: "/realtime-optimization",
+    icon: Database,
+  },
+  {
+    title: "Documentation",
+    url: "/documentation",
+    icon: Database,
+  },
+  {
     title: "Data Management",
     url: "/data-management",
     icon: Database,

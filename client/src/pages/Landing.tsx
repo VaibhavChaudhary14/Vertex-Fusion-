@@ -130,7 +130,7 @@ export default function Landing() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-b from-card/50 to-background">
+        <section className="py-12 md:py-20 bg-gradient-to-b from-card/50 to-background">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="grid md:grid-cols-4 gap-4 stagger-in">
               {stats.map((stat, i) => (
@@ -147,7 +147,7 @@ export default function Landing() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 md:py-24 relative overflow-hidden">
+        <section className="py-12 md:py-20 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
           <div className="container max-w-7xl mx-auto px-4 relative z-10">
             <div className="max-w-2xl mx-auto text-center mb-12 stagger-in">
@@ -181,7 +181,7 @@ export default function Landing() {
         </section>
 
         {/* Benefits Section */}
-        <section className="py-16 md:py-24 bg-card/30">
+        <section className="py-12 md:py-20 bg-card/30">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center mb-12 stagger-in">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 fade-in-up">
@@ -201,7 +201,7 @@ export default function Landing() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 md:py-32 relative overflow-hidden">
+        <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10" />
           <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-primary/30 to-transparent rounded-full filter blur-3xl liquid-blob" />
           <div className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-tl from-secondary/30 to-transparent rounded-full filter blur-3xl liquid-blob" />

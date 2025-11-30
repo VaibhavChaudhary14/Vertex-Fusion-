@@ -23,6 +23,8 @@ import AdvancedAnalytics from "@/pages/AdvancedAnalytics";
 import AttackDetectionAnalytics from "@/pages/AttackDetectionAnalytics";
 import ScalabilityTools from "@/pages/ScalabilityTools";
 import DataPipeline from "@/pages/DataPipeline";
+import RealTimeOptimization from "@/pages/RealTimeOptimization";
+import Documentation from "@/pages/Documentation";
 import Profile from "@/pages/Profile";
 import DataManagement from "@/pages/DataManagement";
 
@@ -110,6 +112,12 @@ function Router() {
       </Route>
       <Route path="/data-pipeline">
         {() => <ProtectedRoute component={DataPipeline} />}
+      </Route>
+      <Route path="/realtime-optimization">
+        {() => <ProtectedRoute component={RealTimeOptimization} />}
+      </Route>
+      <Route path="/documentation">
+        {() => <ProtectedRoute component={Documentation} />}
       </Route>
       <Route path="/data-management">
         {() => <ProtectedRoute component={DataManagement} />}

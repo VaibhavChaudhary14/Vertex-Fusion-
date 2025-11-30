@@ -19,6 +19,9 @@ import { OnlineLearningModule } from "@/components/OnlineLearningModule";
 import { SlowInjectionDetector } from "@/components/SlowInjectionDetector";
 import { AttackLocalizationTool } from "@/components/AttackLocalizationTool";
 import { CriticalNodeSelector } from "@/components/CriticalNodeSelector";
+import { GeneralizedDetectorOptimization } from "@/components/GeneralizedDetectorOptimization";
+import { ReproducibleDataGeneration } from "@/components/ReproducibleDataGeneration";
+import { BenchmarkComparison } from "@/components/BenchmarkComparison";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useVirtualLabState } from "@/lib/virtualLabContext";
@@ -336,6 +339,13 @@ export default function Dashboard() {
           <AttackLocalizationTool />
           <CriticalNodeSelector />
         </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <GeneralizedDetectorOptimization />
+          <ReproducibleDataGeneration />
+        </div>
+
+        <BenchmarkComparison />
 
         {showAttackMetrics && virtualLabState.isRunning && (
           <div className="grid gap-4 md:grid-cols-4">
