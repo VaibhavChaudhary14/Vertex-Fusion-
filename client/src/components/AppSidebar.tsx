@@ -67,64 +67,9 @@ const analyticsItems = [
     url: "/datasets",
     icon: Database,
   },
-  {
-    title: "Model Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Advanced Analytics",
-    url: "/advanced-analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Attack Analytics",
-    url: "/attack-analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Scalability Tools",
-    url: "/scalability-tools",
-    icon: Database,
-  },
-  {
-    title: "Data Pipeline",
-    url: "/data-pipeline",
-    icon: Database,
-  },
-  {
-    title: "Real-Time Optimization",
-    url: "/realtime-optimization",
-    icon: Database,
-  },
-  {
-    title: "Documentation",
-    url: "/documentation",
-    icon: Database,
-  },
-  {
-    title: "Data Management",
-    url: "/data-management",
-    icon: Database,
-  },
 ];
 
 const scientificItems = [
-  {
-    title: "Scientific Validation",
-    url: "/scientific-validation",
-    icon: CheckCircle2,
-  },
-  {
-    title: "Data Fusion Engine",
-    url: "/data-fusion",
-    icon: Layers,
-  },
-  {
-    title: "Critical Node Planning",
-    url: "/critical-nodes",
-    icon: Network,
-  },
   {
     title: "ML Datasets & Models",
     url: "/ml-datasets",

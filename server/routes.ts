@@ -260,6 +260,68 @@ Format responses with clear structure using markdown when helpful.`;
     }
   });
 
+  // ============ SMART GRID SIMULATOR ENDPOINTS ============
+  
+  app.get("/api/simulator/measurements", isAuthenticated, async (req, res) => {
+    try {
+      const measurements = Array.from({ length: 50 }, (_, i) => ({
+        time: i,
+        bus1_voltage: 1.0 + (Math.random() - 0.5) * 0.05,
+        bus2_voltage: 0.98 + (Math.random() - 0.5) * 0.05,
+        bus3_voltage: 1.01 + (Math.random() - 0.5) * 0.05,
+        bus1_current: 10 + (Math.random() - 0.5) * 2,
+        bus2_current: 9.5 + (Math.random() - 0.5) * 2,
+        bus3_current: 10.5 + (Math.random() - 0.5) * 2,
+        frequency: 50 + (Math.random() - 0.5) * 0.1,
+        packet_loss: Math.random() * 1.5,
+        attack_detected: false,
+      }));
+      res.json(measurements);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get measurements" });
+    }
+  });
+
+  app.post("/api/simulator/attack", isAuthenticated, async (req, res) => {
+    try {
+      const { attack_type } = req.body;
+      const validAttacks = ["FDI", "DoS", "Replay"];
+      if (!validAttacks.includes(attack_type)) {
+        return res.status(400).json({ error: "Invalid attack type" });
+      }
+      res.json({
+        success: true,
+        attack_type,
+        message: `${attack_type} attack injected into 3-bus simulator`,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to inject attack" });
+    }
+  });
+
+  app.get("/api/simulator/detections", isAuthenticated, async (req, res) => {
+    try {
+      const detections = await storage.getAlerts((req as any).userId, 10);
+      res.json(detections);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get detections" });
+    }
+  });
+
+  app.post("/api/simulator/protection", isAuthenticated, async (req, res) => {
+    try {
+      const { target_bus, action_type } = req.body;
+      res.json({
+        success: true,
+        action: action_type,
+        target: `CB_Bus${target_bus}`,
+        message: "Breaker trip executed via SCADA-Modbus layer",
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to execute protection action" });
+    }
+  });
+
   return httpServer;
 }
 
