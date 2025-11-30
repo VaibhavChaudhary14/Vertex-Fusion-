@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Activity, Shield, AlertTriangle, Zap, RefreshCw } from "lucide-react";
+import { Activity, Shield, AlertTriangle, Zap, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { SystemHealthBanner } from "@/components/SystemHealthBanner";
 import { GridVisualization } from "@/components/GridVisualization";
 import { AlertStream } from "@/components/AlertStream";
 import { MetricsGrid } from "@/components/MetricsCards";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useVirtualLabState } from "@/lib/virtualLabContext";
 import type {
   SystemHealthMetrics,
   GridNode,
@@ -162,11 +165,23 @@ const mockAlerts: Alert[] = [
 
 export default function Dashboard() {
   const { toast } = useToast();
-  const [nodes] = useState<GridNode[]>(generateIEEE14Nodes());
+  const virtualLabState = useVirtualLabState();
+  const [nodes, setNodes] = useState<GridNode[]>(generateIEEE14Nodes());
   const [edges] = useState<GridEdge[]>(generateIEEE14Edges());
   const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
   const [highlightedNodes, setHighlightedNodes] = useState<string[]>(["bus6", "plc3"]);
   const [healthMetrics] = useState<SystemHealthMetrics>(mockHealthMetrics);
+  const [showAttackMetrics, setShowAttackMetrics] = useState(false);
+
+  useEffect(() => {
+    if (virtualLabState.isRunning && virtualLabState.nodes.length > 0) {
+      setNodes(virtualLabState.nodes);
+      setShowAttackMetrics(true);
+      if (virtualLabState.inferenceResult) {
+        setHighlightedNodes(virtualLabState.inferenceResult.affectedNodes);
+      }
+    }
+  }, [virtualLabState.nodes, virtualLabState.inferenceResult, virtualLabState.isRunning]);
 
   const handleAcknowledge = (alertId: string) => {
     setAlerts((prev) =>
@@ -245,6 +260,150 @@ export default function Dashboard() {
         </div>
 
         <MetricsGrid metrics={metricsData} />
+
+        {showAttackMetrics && virtualLabState.isRunning && (
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card className="border-destructive/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Critical Nodes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Before</span>
+                    <span className="font-semibold">{virtualLabState.beforeAttackMetrics.criticalCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">After</span>
+                    <span className="font-semibold text-destructive">{virtualLabState.afterAttackMetrics.criticalCount}</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    {virtualLabState.afterAttackMetrics.criticalCount > virtualLabState.beforeAttackMetrics.criticalCount ? (
+                      <>
+                        <TrendingUp className="h-4 w-4 text-destructive" />
+                        <span className="text-xs text-destructive">
+                          +{virtualLabState.afterAttackMetrics.criticalCount - virtualLabState.beforeAttackMetrics.criticalCount}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="h-4 w-4 text-success" />
+                        <span className="text-xs text-success">
+                          {virtualLabState.afterAttackMetrics.criticalCount - virtualLabState.beforeAttackMetrics.criticalCount}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-warning/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Warning Nodes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Before</span>
+                    <span className="font-semibold">{virtualLabState.beforeAttackMetrics.warningCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">After</span>
+                    <span className="font-semibold text-warning">{virtualLabState.afterAttackMetrics.warningCount}</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    {virtualLabState.afterAttackMetrics.warningCount > virtualLabState.beforeAttackMetrics.warningCount ? (
+                      <>
+                        <TrendingUp className="h-4 w-4 text-warning" />
+                        <span className="text-xs text-warning">
+                          +{virtualLabState.afterAttackMetrics.warningCount - virtualLabState.beforeAttackMetrics.warningCount}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="h-4 w-4 text-success" />
+                        <span className="text-xs text-success">
+                          {virtualLabState.afterAttackMetrics.warningCount - virtualLabState.beforeAttackMetrics.warningCount}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Avg Anomaly Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Before</span>
+                    <span className="font-semibold">{(virtualLabState.beforeAttackMetrics.avgAnomalyScore * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">After</span>
+                    <span className="font-semibold text-primary">{(virtualLabState.afterAttackMetrics.avgAnomalyScore * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    {virtualLabState.afterAttackMetrics.avgAnomalyScore > virtualLabState.beforeAttackMetrics.avgAnomalyScore ? (
+                      <>
+                        <TrendingUp className="h-4 w-4 text-destructive" />
+                        <span className="text-xs text-destructive">
+                          +{((virtualLabState.afterAttackMetrics.avgAnomalyScore - virtualLabState.beforeAttackMetrics.avgAnomalyScore) * 100).toFixed(1)}%
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="h-4 w-4 text-success" />
+                        <span className="text-xs text-success">
+                          {((virtualLabState.afterAttackMetrics.avgAnomalyScore - virtualLabState.beforeAttackMetrics.avgAnomalyScore) * 100).toFixed(1)}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Attack Detection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {virtualLabState.inferenceResult && (
+                    <>
+                      <Badge variant="destructive" className="w-full justify-center py-1">
+                        {virtualLabState.inferenceResult.attackType} Attack
+                      </Badge>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Confidence</p>
+                        <p className="font-semibold text-primary">
+                          {(virtualLabState.inferenceResult.confidenceScore * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Affected Nodes</p>
+                        <p className="font-semibold text-sm">{virtualLabState.inferenceResult.affectedNodes.join(", ")}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">

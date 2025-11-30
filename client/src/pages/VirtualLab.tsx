@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { VirtualLabControls } from "@/components/VirtualLabControls";
 import { GridVisualization } from "@/components/GridVisualization";
 import { SimulationResults } from "@/components/SimulationResults";
+import { VirtualLabContext, calculateMetrics } from "@/lib/virtualLabContext";
 import type {
   SimulationConfig,
   AttackType,
@@ -117,6 +118,7 @@ export default function VirtualLab() {
   const [events, setEvents] = useState<SimulationEvent[]>([]);
   const [inferenceResult, setInferenceResult] = useState<GNNInferenceResult | undefined>();
   const [currentMitigations, setCurrentMitigations] = useState<string[]>([]);
+  const [beforeAttackNodes, setBeforeAttackNodes] = useState<GridNode[]>([]);
 
   const handleStart = useCallback((newConfig: SimulationConfig) => {
     setConfig(newConfig);
@@ -186,6 +188,11 @@ export default function VirtualLab() {
 
   const handleInjectAttack = useCallback(
     (attackType: AttackType, targetNode: string) => {
+      setNodes((prev) => {
+        setBeforeAttackNodes(JSON.parse(JSON.stringify(prev)));
+        return prev;
+      });
+
       const affectedNodes = [targetNode];
       
       const connectedNodes = edges
@@ -255,8 +262,25 @@ export default function VirtualLab() {
 
   const availableNodes = nodes.map((n) => n.id);
 
+  const beforeAttackMetrics = calculateMetrics(beforeAttackNodes);
+  const afterAttackMetrics = calculateMetrics(nodes);
+
+  const contextValue = useMemo(
+    () => ({
+      isRunning,
+      nodes,
+      edges,
+      inferenceResult,
+      beforeAttackNodes,
+      beforeAttackMetrics,
+      afterAttackMetrics,
+    }),
+    [isRunning, nodes, edges, inferenceResult, beforeAttackNodes, beforeAttackMetrics, afterAttackMetrics]
+  );
+
   return (
-    <div className="p-4 space-y-4 h-full overflow-auto">
+    <VirtualLabContext.Provider value={contextValue}>
+      <div className="p-4 space-y-4 h-full overflow-auto">
       <div>
         <h1 className="text-2xl font-semibold">Virtual Lab</h1>
         <p className="text-sm text-muted-foreground">
@@ -301,5 +325,6 @@ export default function VirtualLab() {
         </div>
       </div>
     </div>
+    </VirtualLabContext.Provider>
   );
 }
