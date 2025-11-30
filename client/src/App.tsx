@@ -21,6 +21,8 @@ import Datasets from "@/pages/Datasets";
 import Analytics from "@/pages/Analytics";
 import AdvancedAnalytics from "@/pages/AdvancedAnalytics";
 import AttackDetectionAnalytics from "@/pages/AttackDetectionAnalytics";
+import ScalabilityTools from "@/pages/ScalabilityTools";
+import DataPipeline from "@/pages/DataPipeline";
 import Profile from "@/pages/Profile";
 import DataManagement from "@/pages/DataManagement";
 
@@ -102,6 +104,12 @@ function Router() {
       </Route>
       <Route path="/attack-analytics">
         {() => <ProtectedRoute component={AttackDetectionAnalytics} />}
+      </Route>
+      <Route path="/scalability-tools">
+        {() => <ProtectedRoute component={ScalabilityTools} />}
+      </Route>
+      <Route path="/data-pipeline">
+        {() => <ProtectedRoute component={DataPipeline} />}
       </Route>
       <Route path="/data-management">
         {() => <ProtectedRoute component={DataManagement} />}

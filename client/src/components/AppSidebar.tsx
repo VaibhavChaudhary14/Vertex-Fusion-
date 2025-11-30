@@ -77,6 +77,16 @@ const analyticsItems = [
     icon: BarChart3,
   },
   {
+    title: "Scalability Tools",
+    url: "/scalability-tools",
+    icon: Database,
+  },
+  {
+    title: "Data Pipeline",
+    url: "/data-pipeline",
+    icon: Database,
+  },
+  {
     title: "Data Management",
     url: "/data-management",
     icon: Database,

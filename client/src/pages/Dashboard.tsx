@@ -15,6 +15,10 @@ import { DataRefreshControl } from "@/components/DataRefreshControl";
 import { PerformanceMetricsDashboard } from "@/components/PerformanceMetricsDashboard";
 import { GNNArchitectureVisualizer } from "@/components/GNNArchitectureVisualizer";
 import { FeatureNormalizationPanel } from "@/components/FeatureNormalizationPanel";
+import { OnlineLearningModule } from "@/components/OnlineLearningModule";
+import { SlowInjectionDetector } from "@/components/SlowInjectionDetector";
+import { AttackLocalizationTool } from "@/components/AttackLocalizationTool";
+import { CriticalNodeSelector } from "@/components/CriticalNodeSelector";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useVirtualLabState } from "@/lib/virtualLabContext";
@@ -324,6 +328,13 @@ export default function Dashboard() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <FeatureNormalizationPanel />
+          <OnlineLearningModule />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <SlowInjectionDetector />
+          <AttackLocalizationTool />
+          <CriticalNodeSelector />
         </div>
 
         {showAttackMetrics && virtualLabState.isRunning && (
