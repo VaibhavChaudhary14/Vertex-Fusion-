@@ -24,16 +24,33 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000;
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  const secret = process.env.SESSION_SECRET || "demo-secret-key";
+  
+  // If database is available, use PostgreSQL store; otherwise use memory store
+  if (process.env.DATABASE_URL) {
+    const pgStore = connectPg(session);
+    const sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
+    return session({
+      secret,
+      store: sessionStore,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: true,
+        maxAge: sessionTtl,
+      },
+    });
+  }
+  
+  // Fallback to memory store if no database
   return session({
-    secret: process.env.SESSION_SECRET!,
-    store: sessionStore,
+    secret,
     resave: false,
     saveUninitialized: false,
     cookie: {
