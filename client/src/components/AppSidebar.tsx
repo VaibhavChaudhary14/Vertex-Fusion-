@@ -6,13 +6,9 @@ import {
   MessageSquareText,
   Newspaper,
   Database,
-  BarChart3,
   User,
   Shield,
   LogOut,
-  CheckCircle2,
-  Layers,
-  Network,
   Cpu,
   Brain,
   Wrench,
@@ -101,23 +97,25 @@ export function AppSidebar() {
     return "U";
   };
 
+  const isActive = (path: string) => location === path;
+
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 border-b">
         <Link href="/dashboard" data-testid="link-logo">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 hover-elevate rounded-lg p-2 transition-all">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">Vertex Fusion</span>
-              <span className="text-xs text-muted-foreground">GNN Security</span>
+              <span className="text-sm font-semibold text-foreground">Vertex Fusion</span>
+              <span className="text-xs text-muted-foreground">ST-GNN Security</span>
             </div>
           </div>
         </Link>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>

@@ -18,18 +18,7 @@ import Knowledge from "@/pages/Knowledge";
 import Assistant from "@/pages/Assistant";
 import Threats from "@/pages/Threats";
 import Datasets from "@/pages/Datasets";
-import Analytics from "@/pages/Analytics";
-import AdvancedAnalytics from "@/pages/AdvancedAnalytics";
-import AttackDetectionAnalytics from "@/pages/AttackDetectionAnalytics";
-import ScalabilityTools from "@/pages/ScalabilityTools";
-import DataPipeline from "@/pages/DataPipeline";
-import RealTimeOptimization from "@/pages/RealTimeOptimization";
-import Documentation from "@/pages/Documentation";
 import Profile from "@/pages/Profile";
-import DataManagement from "@/pages/DataManagement";
-import ScientificValidation from "@/pages/ScientificValidation";
-import DataFusionEngine from "@/pages/DataFusionEngine";
-import CriticalNodePlanning from "@/pages/CriticalNodePlanning";
 import BackendSetup from "@/pages/BackendSetup";
 import MLDatasetsAndModels from "@/pages/MLDatasetsAndModels";
 import PythonUtilities from "@/pages/PythonUtilities";
@@ -104,41 +93,8 @@ function Router() {
       <Route path="/datasets">
         {() => <ProtectedRoute component={Datasets} />}
       </Route>
-      <Route path="/analytics">
-        {() => <ProtectedRoute component={Analytics} />}
-      </Route>
-      <Route path="/advanced-analytics">
-        {() => <ProtectedRoute component={AdvancedAnalytics} />}
-      </Route>
-      <Route path="/attack-analytics">
-        {() => <ProtectedRoute component={AttackDetectionAnalytics} />}
-      </Route>
-      <Route path="/scalability-tools">
-        {() => <ProtectedRoute component={ScalabilityTools} />}
-      </Route>
-      <Route path="/data-pipeline">
-        {() => <ProtectedRoute component={DataPipeline} />}
-      </Route>
-      <Route path="/realtime-optimization">
-        {() => <ProtectedRoute component={RealTimeOptimization} />}
-      </Route>
-      <Route path="/documentation">
-        {() => <ProtectedRoute component={Documentation} />}
-      </Route>
-      <Route path="/data-management">
-        {() => <ProtectedRoute component={DataManagement} />}
-      </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={Profile} />}
-      </Route>
-      <Route path="/scientific-validation">
-        {() => <ProtectedRoute component={ScientificValidation} />}
-      </Route>
-      <Route path="/data-fusion">
-        {() => <ProtectedRoute component={DataFusionEngine} />}
-      </Route>
-      <Route path="/critical-nodes">
-        {() => <ProtectedRoute component={CriticalNodePlanning} />}
       </Route>
       <Route path="/backend-setup">
         {() => <ProtectedRoute component={BackendSetup} />}
