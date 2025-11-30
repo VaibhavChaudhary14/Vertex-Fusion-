@@ -20,6 +20,7 @@ import Threats from "@/pages/Threats";
 import Datasets from "@/pages/Datasets";
 import Analytics from "@/pages/Analytics";
 import AdvancedAnalytics from "@/pages/AdvancedAnalytics";
+import AttackDetectionAnalytics from "@/pages/AttackDetectionAnalytics";
 import Profile from "@/pages/Profile";
 import DataManagement from "@/pages/DataManagement";
 
@@ -98,6 +99,9 @@ function Router() {
       </Route>
       <Route path="/advanced-analytics">
         {() => <ProtectedRoute component={AdvancedAnalytics} />}
+      </Route>
+      <Route path="/attack-analytics">
+        {() => <ProtectedRoute component={AttackDetectionAnalytics} />}
       </Route>
       <Route path="/data-management">
         {() => <ProtectedRoute component={DataManagement} />}

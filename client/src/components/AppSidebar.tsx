@@ -72,6 +72,11 @@ const analyticsItems = [
     icon: BarChart3,
   },
   {
+    title: "Attack Analytics",
+    url: "/attack-analytics",
+    icon: BarChart3,
+  },
+  {
     title: "Data Management",
     url: "/data-management",
     icon: Database,

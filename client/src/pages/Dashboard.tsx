@@ -12,6 +12,9 @@ import { CPFusionVisualizer } from "@/components/CPFusionVisualizer";
 import { GNNMetricsPanel } from "@/components/GNNMetricsPanel";
 import { AttackTypeMatrix } from "@/components/AttackTypeMatrix";
 import { DataRefreshControl } from "@/components/DataRefreshControl";
+import { PerformanceMetricsDashboard } from "@/components/PerformanceMetricsDashboard";
+import { GNNArchitectureVisualizer } from "@/components/GNNArchitectureVisualizer";
+import { FeatureNormalizationPanel } from "@/components/FeatureNormalizationPanel";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useVirtualLabState } from "@/lib/virtualLabContext";
@@ -297,7 +300,7 @@ export default function Dashboard() {
         <MetricsGrid metrics={metricsData} />
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-4">
             <CPFusionVisualizer data={{
               cyberFeatures: [
                 { label: "Network Traffic Anomaly", value: 0.65, anomaly: 0.45 },
@@ -311,10 +314,16 @@ export default function Dashboard() {
               ],
               fusedScore: virtualLabState.afterAttackMetrics.avgAnomalyScore || 0.65,
             }} />
+            <GNNArchitectureVisualizer />
           </div>
-          <div>
+          <div className="space-y-4">
             <AttackTypeMatrix />
+            <PerformanceMetricsDashboard />
           </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <FeatureNormalizationPanel />
         </div>
 
         {showAttackMetrics && virtualLabState.isRunning && (
