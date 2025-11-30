@@ -69,7 +69,7 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-lg">GridGuardian AI</span>
+            <span className="font-semibold text-lg">Vertex Fusion</span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -93,7 +93,7 @@ export default function Landing() {
                 <span className="text-primary">26% Faster</span> with GNN Fusion
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                GridGuardian AI brings cutting-edge Graph Neural Network research to real-world
+                Vertex Fusion brings cutting-edge Graph Neural Network research to real-world
                 smart grid security. Fuse cyber and physical features for superior threat detection.
               </p>
               <div className="flex flex-col items-center gap-4 pt-4">

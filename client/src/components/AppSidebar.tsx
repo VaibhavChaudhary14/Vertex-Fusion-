@@ -91,8 +91,8 @@ export function AppSidebar() {
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">GridGuardian</span>
-              <span className="text-xs text-muted-foreground">AI Security</span>
+              <span className="text-sm font-semibold">Vertex Fusion</span>
+              <span className="text-xs text-muted-foreground">GNN Security</span>
             </div>
           </div>
         </Link>
