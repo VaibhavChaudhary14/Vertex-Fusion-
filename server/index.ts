@@ -2,11 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import { fileURLToPath } from "url";
 import path from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
@@ -80,7 +76,7 @@ app.use((req, res, next) => {
     // setting up all the other routes so the catch-all route
     // doesn't interfere with the other routes
     const fs = await import("fs");
-    const distPath = path.resolve(__dirname, "public");
+    const distPath = path.resolve(process.cwd(), "dist", "public");
     const distExists = fs.existsSync(distPath);
 
     if (process.env.NODE_ENV === "production" || distExists) {
