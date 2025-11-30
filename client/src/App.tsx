@@ -30,6 +30,7 @@ import DataManagement from "@/pages/DataManagement";
 import ScientificValidation from "@/pages/ScientificValidation";
 import DataFusionEngine from "@/pages/DataFusionEngine";
 import CriticalNodePlanning from "@/pages/CriticalNodePlanning";
+import BackendSetup from "@/pages/BackendSetup";
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const sidebarStyle = {
@@ -136,6 +137,9 @@ function Router() {
       </Route>
       <Route path="/critical-nodes">
         {() => <ProtectedRoute component={CriticalNodePlanning} />}
+      </Route>
+      <Route path="/backend-setup">
+        {() => <ProtectedRoute component={BackendSetup} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Layers,
   Network,
+  Cpu,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -121,6 +122,11 @@ const scientificItems = [
     title: "Critical Node Planning",
     url: "/critical-nodes",
     icon: Network,
+  },
+  {
+    title: "Backend Setup",
+    url: "/backend-setup",
+    icon: Cpu,
   },
 ];
 
