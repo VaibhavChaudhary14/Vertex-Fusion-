@@ -83,16 +83,17 @@ async function upsertUser(claims: any) {
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
-  app.use(getSession());
-  app.use(passport.initialize());
-  app.use(passport.session());
-
+  
   const config = await getOidcConfig();
   
   // If Replit Auth is not available (e.g., on Render), skip auth setup
   if (!config) {
     return;
   }
+  
+  app.use(getSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   const verify: VerifyFunction = async (
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
