@@ -11,6 +11,7 @@ import {
   Users,
   BarChart3,
 } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,16 +96,24 @@ export default function Landing() {
                 GridGuardian AI brings cutting-edge Graph Neural Network research to real-world
                 smart grid security. Fuse cyber and physical features for superior threat detection.
               </p>
-              <div className="flex items-center justify-center gap-4 pt-4">
-                <a href="/api/login">
-                  <Button size="lg" data-testid="button-get-started">
-                    Get Started
-                    <ArrowRight className="h-4 w-4 ml-2" />
+              <div className="flex flex-col items-center gap-4 pt-4">
+                <div className="flex items-center justify-center gap-4">
+                  <a href="/api/login">
+                    <Button size="lg" data-testid="button-get-started">
+                      Get Started
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </a>
+                  <Button variant="outline" size="lg" data-testid="button-request-demo">
+                    Request Demo
+                  </Button>
+                </div>
+                <a href="/api/login" className="flex items-center justify-center">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid="button-sign-in-google">
+                    <SiGoogle className="h-4 w-4 mr-2" />
+                    Or sign in with Google
                   </Button>
                 </a>
-                <Button variant="outline" size="lg" data-testid="button-request-demo">
-                  Request Demo
-                </Button>
               </div>
             </div>
           </div>

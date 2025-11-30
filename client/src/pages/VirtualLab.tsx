@@ -158,6 +158,32 @@ export default function VirtualLab() {
     });
   }, [toast]);
 
+  const handleClearAttacks = useCallback(() => {
+    setNodes((prev) =>
+      prev.map((node) => ({
+        ...node,
+        status: "normal" as const,
+        anomalyScore: 0,
+      }))
+    );
+    setHighlightedNodes([]);
+    setInferenceResult(undefined);
+    setCurrentMitigations([]);
+    setEvents((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        timestamp: new Date(),
+        type: "status_change",
+        description: "All attacks cleared - Grid returned to normal state",
+      },
+    ]);
+    toast({
+      title: "Attacks Cleared",
+      description: "All attacks have been removed from the grid.",
+    });
+  }, [toast]);
+
   const handleInjectAttack = useCallback(
     (attackType: AttackType, targetNode: string) => {
       const affectedNodes = [targetNode];
@@ -245,6 +271,7 @@ export default function VirtualLab() {
             onStart={handleStart}
             onStop={handleStop}
             onInjectAttack={handleInjectAttack}
+            onClearAttacks={handleClearAttacks}
             availableNodes={availableNodes}
           />
         </div>

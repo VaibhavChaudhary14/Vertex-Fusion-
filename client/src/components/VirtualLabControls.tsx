@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Square, Zap, AlertTriangle } from "lucide-react";
+import { Play, Square, Zap, AlertTriangle, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,7 @@ interface VirtualLabControlsProps {
   onStart: (config: SimulationConfig) => void;
   onStop: () => void;
   onInjectAttack: (attackType: AttackType, targetNode: string) => void;
+  onClearAttacks: () => void;
   availableNodes: string[];
 }
 
@@ -54,6 +55,7 @@ export function VirtualLabControls({
   onStart,
   onStop,
   onInjectAttack,
+  onClearAttacks,
   availableNodes,
 }: VirtualLabControlsProps) {
   const [topology, setTopology] = useState<GridTopology>("ieee14");
@@ -249,23 +251,40 @@ export function VirtualLabControls({
               </Select>
             </div>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={handleInjectAttack}
-                  disabled={!targetNode}
-                  data-testid="button-inject-attack"
-                >
-                  <Zap className="h-4 w-4 mr-2" />
-                  Inject Attack
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>This will trigger an attack in the simulation</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={handleInjectAttack}
+                    disabled={!targetNode}
+                    data-testid="button-inject-attack"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Inject Attack
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>This will trigger an attack in the simulation</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onClearAttacks}
+                    data-testid="button-clear-attacks"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear all active attacks</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </CardContent>
         </Card>
       )}
