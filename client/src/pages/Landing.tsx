@@ -1,234 +1,227 @@
-import { Shield, ArrowRight, CheckCircle } from "lucide-react";
+import { Shield, ArrowRight, CheckCircle, Zap, Lock, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { AnimatedHeroText } from "@/components/AnimatedHeroText";
-import { NewLandingHero } from "@/components/NewLandingHero";
-
-const stats = [
-  { value: "26%", label: "Faster" },
-  { value: "97.8%", label: "Accurate" },
-  { value: "<30ms", label: "Latency" },
-  { value: "80+", label: "Ops/sec" },
-];
 
 export default function Landing() {
   return (
-    <div className="w-full overflow-x-hidden bg-background">
+    <div className="min-h-screen w-full overflow-x-hidden bg-black text-white">
+      {/* Animated background grid */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0, 255, 0, 0.05) 25%, rgba(0, 255, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, 0.05) 75%, rgba(0, 255, 0, 0.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 255, 0, 0.05) 25%, rgba(0, 255, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, 0.05) 75%, rgba(0, 255, 0, 0.05) 76%, transparent 77%, transparent)',
+          backgroundSize: '50px 50px',
+          animation: 'grid-shift 8s linear infinite'
+        }} />
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 border-b border-green-900/30 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
         <div className="container max-w-7xl mx-auto flex items-center justify-between h-16 px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-primary to-secondary">
-              <Shield className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-gradient-to-br from-green-500 to-green-700 border border-green-400/50">
+              <Shield className="h-5 w-5 text-black" />
             </div>
-            <span className="font-bold text-lg bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Vertex Fusion
-            </span>
+            <span className="font-bold text-lg tracking-tight font-mono">VERTEX FUSION</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <ThemeToggle />
             <a href="/api/login">
-              <Button className="hover-elevate" data-testid="button-sign-in">
-                Sign In
+              <Button 
+                variant="outline" 
+                className="border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                data-testid="button-sign-in"
+              >
+                SIGN IN
               </Button>
             </a>
           </div>
         </div>
       </header>
 
-      <main className="w-full">
-        {/* Animated Hero Section */}
-        <AnimatedHeroText />
-
-        {/* Stats Section */}
-        <section className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-transparent via-primary/5 to-transparent">
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-primary to-transparent rounded-full filter blur-3xl" />
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-tl from-secondary to-transparent rounded-full filter blur-3xl" />
-          </div>
+      <main className="relative w-full">
+        {/* Hero Section */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+          {/* Radial glow background */}
+          <div className="absolute inset-0 bg-radial-gradient opacity-30 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse at center, rgba(0, 255, 0, 0.1) 0%, transparent 70%)'
+          }} />
 
           <div className="container max-w-7xl mx-auto px-4 relative z-10">
-            <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              {stats.map((stat, i) => (
-                <div
-                  key={i}
-                  className="group relative p-6 rounded-xl border border-primary/20 bg-card/30 backdrop-blur hover-elevate fade-in-up"
-                  style={{
-                    animation: `fade-in-up 0.6s ease-out ${i * 0.1}s both`,
-                  }}
-                >
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="relative z-10 text-center">
-                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-                      {stat.value}
-                    </div>
-                    <div className="text-sm font-semibold text-muted-foreground">{stat.label}</div>
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-green-500/30 bg-green-500/5 text-sm font-mono text-green-400">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                IEEE OAJPE RESEARCH
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-tight font-mono tracking-tighter">
+                <span className="block text-white">DETECT</span>
+                <span className="block bg-gradient-to-r from-green-400 via-cyan-400 to-green-400 bg-clip-text text-transparent animate-pulse">
+                  CYBER-PHYSICAL
+                </span>
+                <span className="block text-white">ATTACKS</span>
+              </h1>
+
+              {/* Subheading */}
+              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed font-light">
+                Enterprise-grade GNN-powered intrusion detection for smart grids. 
+                Fuse cyber and physical data for superior threat detection.
+              </p>
+
+              {/* Stats */}
+              <div className="grid md:grid-cols-3 gap-6 py-8">
+                {[
+                  { label: "FASTER", value: "26%" },
+                  { label: "ACCURATE", value: "97.8%" },
+                  { label: "LATENCY", value: "<30ms" },
+                ].map((stat, i) => (
+                  <div key={i} className="p-4 border border-green-900/30 bg-green-500/5 rounded-sm">
+                    <div className="font-mono text-2xl md:text-3xl text-green-400 font-bold">{stat.value}</div>
+                    <div className="text-xs md:text-sm text-gray-400 font-mono mt-2">{stat.label}</div>
                   </div>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+                <a href="/signup">
+                  <button className="px-8 py-3 bg-green-500 text-black font-bold font-mono rounded-sm hover:bg-green-400 transition-all hover:shadow-lg hover:shadow-green-500/50 flex items-center gap-2">
+                    CREATE ACCOUNT
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </a>
+                <a href="/api/login">
+                  <button className="px-8 py-3 border border-green-500/50 text-green-400 font-bold font-mono rounded-sm hover:bg-green-500/10 transition-all">
+                    LEARN MORE
+                  </button>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Animated lines accent */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50" />
+        </section>
+
+        {/* Features Section */}
+        <section className="relative py-24 md:py-32 overflow-hidden border-t border-green-900/30">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="mb-16 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold font-mono mb-4">CAPABILITIES</h2>
+              <p className="text-gray-400 text-lg">Advanced threat detection for smart grids</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: Zap,
+                  title: "REAL-TIME",
+                  desc: "Sub-30ms latency with WebSocket streaming"
+                },
+                {
+                  icon: Lock,
+                  title: "FUSION",
+                  desc: "Cyber-physical data integration and analysis"
+                },
+                {
+                  icon: Cpu,
+                  title: "GNN POWERED",
+                  desc: "Graph neural network intrusion detection"
+                },
+              ].map((feature, i) => {
+                const Icon = feature.icon;
+                return (
+                  <Card key={i} className="border-green-900/30 bg-gradient-to-b from-green-500/5 to-transparent p-8 rounded-sm hover:border-green-500/50 transition-all group cursor-pointer">
+                    <div className="flex items-start gap-4">
+                      <Icon className="h-6 w-6 text-green-400 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-bold font-mono text-white mb-2">{feature.title}</h3>
+                        <p className="text-sm text-gray-400">{feature.desc}</p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Attacks Detection */}
+        <section className="relative py-24 md:py-32 overflow-hidden border-t border-green-900/30">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="mb-16 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold font-mono mb-4">ATTACK DETECTION</h2>
+              <p className="text-gray-400 text-lg">5 Advanced Threat Types</p>
+            </div>
+
+            <div className="grid md:grid-cols-5 gap-4 max-w-4xl mx-auto">
+              {[
+                { code: "RW", name: "Ransomware", color: "red" },
+                { code: "FDI", name: "False Data", color: "yellow" },
+                { code: "RS", name: "Reverse Shell", color: "red" },
+                { code: "BF", name: "Brute Force", color: "yellow" },
+                { code: "BD", name: "Backdoor", color: "red" },
+              ].map((attack, i) => (
+                <div key={i} className="p-6 border border-green-900/30 bg-green-500/5 rounded-sm hover:border-green-500/50 transition-all text-center group cursor-pointer">
+                  <div className="font-mono text-2xl font-bold mb-2">{attack.code}</div>
+                  <div className="text-xs text-gray-400 font-mono">{attack.name}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Features Showcase */}
-        <NewLandingHero />
-
-        {/* Testimonial/Trust Section */}
-        <section className="relative py-20 md:py-28 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10" />
-
-          <div className="container max-w-7xl mx-auto px-4 relative z-10">
-            <div className="max-w-3xl mx-auto text-center space-y-8">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="fade-in-up">
-                  Trusted by Security Teams
-                </Badge>
-                <h2 className="text-4xl md:text-5xl font-bold fade-in-up">
-                  Protecting{" "}
-                  <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                    Critical Infrastructure
-                  </span>
-                </h2>
-                <p className="text-lg text-muted-foreground fade-in-up">
-                  Deployed across enterprise utility companies detecting cyber-physical threats in
-                  real-time
-                </p>
-              </div>
-
-              {/* Key Metrics */}
-              <div className="grid md:grid-cols-3 gap-6 py-8">
-                {[
-                  { number: "50+", text: "Power Utilities" },
-                  { number: "10K+", text: "Daily Detections" },
-                  { number: "99.9%", text: "Uptime" },
-                ].map((metric, i) => (
-                  <div
-                    key={i}
-                    className="p-6 rounded-lg bg-card/50 border border-primary/20 fade-in-up"
-                    style={{
-                      animation: `fade-in-up 0.6s ease-out ${i * 0.1}s both`,
-                    }}
-                  >
-                    <div className="text-3xl font-bold text-primary mb-2">{metric.number}</div>
-                    <div className="text-sm text-muted-foreground">{metric.text}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Key Capabilities */}
-        <section className="relative py-20 md:py-28 overflow-hidden">
+        {/* Grid Topologies */}
+        <section className="relative py-24 md:py-32 overflow-hidden border-t border-green-900/30">
           <div className="container max-w-7xl mx-auto px-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 fade-in-up">
-              Powerful Capabilities
-            </h2>
+            <div className="mb-16 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold font-mono mb-4">IEEE TOPOLOGIES</h2>
+              <p className="text-gray-400 text-lg">Support for standard power grid configurations</p>
+            </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
               {[
-                {
-                  title: "GNN Architecture",
-                  desc: "Advanced graph neural networks for cyber-physical fusion",
-                },
-                {
-                  title: "Real-Time Processing",
-                  desc: "Sub-30ms latency with WebSocket streaming",
-                },
-                {
-                  title: "Virtual Lab",
-                  desc: "Safe testing environment for IEEE topologies",
-                },
-                {
-                  title: "Attack Simulation",
-                  desc: "5 attack types including RW, FDI, RS, BF, BD",
-                },
-                {
-                  title: "AI Analysis",
-                  desc: "Gemini-powered threat intelligence engine",
-                },
-                {
-                  title: "Scalability",
-                  desc: "Distributed processing with hardware acceleration",
-                },
-              ].map((cap, i) => (
-                <Card
-                  key={i}
-                  className="border-primary/20 hover-elevate bg-card/50 backdrop-blur fade-in-up group"
-                  style={{
-                    animation: `fade-in-up 0.6s ease-out ${i * 0.08}s both`,
-                  }}
-                >
-                  <CardHeader>
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-4 group-hover:from-primary/30 group-hover:to-secondary/30 transition-colors">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">{cap.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">{cap.desc}</p>
-                  </CardContent>
-                </Card>
+                { buses: "14 Bus", desc: "Small power system" },
+                { buses: "30 Bus", desc: "Medium network" },
+                { buses: "118 Bus", desc: "Large-scale grid" },
+              ].map((topo, i) => (
+                <div key={i} className="p-8 border border-green-900/30 bg-green-500/5 rounded-sm text-center hover:border-green-500/50 transition-all">
+                  <div className="font-mono text-3xl font-bold text-green-400 mb-2">{topo.buses}</div>
+                  <div className="text-sm text-gray-400">{topo.desc}</div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Architecture Highlight */}
-        <section className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-card/20 to-transparent">
+        {/* Features List */}
+        <section className="relative py-24 md:py-32 overflow-hidden border-t border-green-900/30">
           <div className="container max-w-7xl mx-auto px-4">
-            <div className="max-w-4xl mx-auto space-y-8">
-              <div className="text-center space-y-4">
-                <Badge variant="secondary">Research-Backed</Badge>
-                <h2 className="text-4xl md:text-5xl font-bold">
-                  IEEE OAJPE Foundation
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Built on peer-reviewed research for intrusion detection in smart grids using
-                  graph neural networks
-                </p>
-              </div>
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold font-mono mb-12">ENTERPRISE FEATURES</h2>
 
               <div className="grid md:grid-cols-2 gap-8">
                 {[
-                  {
-                    title: "Multi-Modal Fusion",
-                    points: [
-                      "Cyber data integration",
-                      "Physical sensor inputs",
-                      "Temporal correlation analysis",
-                      "Real-time state estimation",
-                    ],
-                  },
-                  {
-                    title: "Advanced Detection",
-                    points: [
-                      "Graph-based anomaly detection",
-                      "Online learning capabilities",
-                      "Slow injection detection",
-                      "Attack localization",
-                    ],
-                  },
-                ].map((section, i) => (
-                  <Card
-                    key={i}
-                    className="border-primary/20 bg-card/50 backdrop-blur fade-in-up p-8"
-                    style={{
-                      animation: `fade-in-up 0.6s ease-out ${i * 0.1}s both`,
-                    }}
-                  >
-                    <h3 className="text-xl font-bold mb-6 text-primary">{section.title}</h3>
-                    <ul className="space-y-3">
-                      {section.points.map((point, j) => (
-                        <li key={j} className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-secondary" />
-                          <span className="text-sm">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
+                  "GNN-based intrusion detection",
+                  "Multi-modal data fusion",
+                  "Virtual lab environment",
+                  "Real-time graph visualization",
+                  "AI threat analysis",
+                  "SCADA protocol support",
+                  "Online learning mode",
+                  "Attack localization",
+                  "Slow injection detection",
+                  "Benchmark comparisons",
+                  "Dataset generation",
+                  "Role-based access",
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 p-4 border border-green-900/30 bg-green-500/5 rounded-sm hover:border-green-500/50 transition-all">
+                    <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+                    <span className="font-mono text-sm">{feature.toUpperCase()}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -236,128 +229,58 @@ export default function Landing() {
         </section>
 
         {/* Final CTA */}
-        <section className="relative py-20 md:py-28 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5" />
+        <section className="relative py-24 md:py-32 overflow-hidden border-t border-green-900/30">
+          <div className="container max-w-4xl mx-auto px-4 text-center space-y-8">
+            <h2 className="text-5xl md:text-6xl font-bold font-mono">READY TO DEPLOY?</h2>
+            <p className="text-xl text-gray-400 font-light">
+              Protect your smart grid infrastructure with enterprise-grade threat detection
+            </p>
 
-          <div className="container max-w-3xl mx-auto px-4 relative z-10 text-center space-y-8">
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold fade-in-up">
-                Start Protecting Your Grid Today
-              </h2>
-              <p className="text-xl text-muted-foreground fade-in-up">
-                Deploy Vertex Fusion in minutes. No credit card required.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 fade-in-up">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <a href="/signup">
-                <Button size="lg" className="hover-elevate bg-gradient-to-r from-primary to-secondary">
-                  Create Free Account
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
+                <button className="px-8 py-3 bg-green-500 text-black font-bold font-mono rounded-sm hover:bg-green-400 transition-all hover:shadow-lg hover:shadow-green-500/50 flex items-center gap-2">
+                  CREATE ACCOUNT
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </a>
               <a href="/api/login">
-                <Button variant="outline" size="lg" className="hover-elevate">
-                  Sign In
-                </Button>
+                <button className="px-8 py-3 border border-green-500/50 text-green-400 font-bold font-mono rounded-sm hover:bg-green-500/10 transition-all">
+                  SIGN IN
+                </button>
               </a>
             </div>
-
-            <p className="text-sm text-muted-foreground">
-              Enterprise deployments available. Contact us for custom solutions.
-            </p>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-card/30 py-12 mt-20">
+      <footer className="border-t border-green-900/30 py-12 mt-20 bg-black/50">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Pricing
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a href="/docs" className="hover:text-foreground transition-colors">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Research
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Security</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Privacy
-                  </a>
-                </li>
-                <li>
-                  <a href="/" className="hover:text-foreground transition-colors">
-                    Terms
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between">
+          <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Vertex Fusion</span>
+              <Shield className="h-5 w-5 text-green-400" />
+              <span className="font-bold font-mono text-sm">VERTEX FUSION</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2024 Vertex Fusion. IEEE OAJPE Research-backed GNN intrusion detection.
+            <p className="text-sm text-gray-500 font-mono">
+              IEEE OAJPE Research-backed GNN Intrusion Detection
             </p>
           </div>
         </div>
       </footer>
 
       <style>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes grid-shift {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(50px); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `}</style>
     </div>
