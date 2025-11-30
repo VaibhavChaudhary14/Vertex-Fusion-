@@ -237,6 +237,29 @@ Format responses with clear structure using markdown when helpful.`;
     }
   });
 
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, firstName, lastName, password } = req.body;
+      
+      if (!email || !firstName || !lastName || !password) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      await storage.upsertUser({
+        id: email,
+        email,
+        firstName,
+        lastName,
+        profileImageUrl: null,
+      });
+      
+      res.json({ success: true, message: "Account created successfully" });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
   return httpServer;
 }
 

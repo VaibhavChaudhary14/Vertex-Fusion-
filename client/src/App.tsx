@@ -11,6 +11,7 @@ import { ScanEffect } from "@/components/ScanEffect";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
+import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
 import VirtualLab from "@/pages/VirtualLab";
 import Knowledge from "@/pages/Knowledge";
@@ -73,6 +74,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/signup" component={SignUp} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>

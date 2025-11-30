@@ -98,20 +98,22 @@ export default function Landing() {
               </p>
               <div className="flex flex-col items-center gap-4 pt-4">
                 <div className="flex items-center justify-center gap-4">
-                  <a href="/api/login">
+                  <a href="/signup">
                     <Button size="lg" data-testid="button-get-started">
-                      Get Started
+                      Create Account
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </a>
-                  <Button variant="outline" size="lg" data-testid="button-request-demo">
-                    Request Demo
-                  </Button>
+                  <a href="/api/login">
+                    <Button variant="outline" size="lg" data-testid="button-sign-in-existing">
+                      Sign In
+                    </Button>
+                  </a>
                 </div>
-                <a href="/api/login" className="flex items-center justify-center">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid="button-sign-in-google">
+                <a href="/signup" className="flex items-center justify-center">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid="button-create-account-alt">
                     <SiGoogle className="h-4 w-4 mr-2" />
-                    Or sign in with Google
+                    Or create account with Google
                   </Button>
                 </a>
               </div>
