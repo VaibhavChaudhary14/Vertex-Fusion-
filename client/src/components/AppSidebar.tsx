@@ -15,6 +15,7 @@ import {
   Network,
   Cpu,
   Brain,
+  Wrench,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -133,6 +134,11 @@ const scientificItems = [
     title: "Backend Setup",
     url: "/backend-setup",
     icon: Cpu,
+  },
+  {
+    title: "Python Utilities",
+    url: "/python-utilities",
+    icon: Wrench,
   },
 ];
 

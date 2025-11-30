@@ -21,6 +21,7 @@
 10. [Design System](#design-system)
 11. [Python ML Backend](#python-ml-backend)
 12. [ML Datasets & Models](#ml-datasets--models)
+13. [Python Utilities & Visualization](#python-utilities--visualization)
 
 ---
 
