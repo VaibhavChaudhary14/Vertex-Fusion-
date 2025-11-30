@@ -34,7 +34,7 @@ export default function Dashboard() {
   }, [healthData]);
 
   return (
-    <div className="min-h-screen bg-background overflow-auto">
+    <div className="bg-background">
       <div className="space-y-6 p-6">
         {/* Dashboard Header */}
         <div className="space-y-2">
