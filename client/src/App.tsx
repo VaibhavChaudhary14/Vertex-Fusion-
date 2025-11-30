@@ -27,6 +27,9 @@ import RealTimeOptimization from "@/pages/RealTimeOptimization";
 import Documentation from "@/pages/Documentation";
 import Profile from "@/pages/Profile";
 import DataManagement from "@/pages/DataManagement";
+import ScientificValidation from "@/pages/ScientificValidation";
+import DataFusionEngine from "@/pages/DataFusionEngine";
+import CriticalNodePlanning from "@/pages/CriticalNodePlanning";
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const sidebarStyle = {
@@ -124,6 +127,15 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={Profile} />}
+      </Route>
+      <Route path="/scientific-validation">
+        {() => <ProtectedRoute component={ScientificValidation} />}
+      </Route>
+      <Route path="/data-fusion">
+        {() => <ProtectedRoute component={DataFusionEngine} />}
+      </Route>
+      <Route path="/critical-nodes">
+        {() => <ProtectedRoute component={CriticalNodePlanning} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
