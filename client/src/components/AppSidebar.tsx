@@ -66,6 +66,16 @@ const analyticsItems = [
     url: "/analytics",
     icon: BarChart3,
   },
+  {
+    title: "Advanced Analytics",
+    url: "/advanced-analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Data Management",
+    url: "/data-management",
+    icon: Database,
+  },
 ];
 
 export function AppSidebar() {

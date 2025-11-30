@@ -18,7 +18,9 @@ import Assistant from "@/pages/Assistant";
 import Threats from "@/pages/Threats";
 import Datasets from "@/pages/Datasets";
 import Analytics from "@/pages/Analytics";
+import AdvancedAnalytics from "@/pages/AdvancedAnalytics";
 import Profile from "@/pages/Profile";
+import DataManagement from "@/pages/DataManagement";
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const sidebarStyle = {
@@ -91,6 +93,12 @@ function Router() {
       </Route>
       <Route path="/analytics">
         {() => <ProtectedRoute component={Analytics} />}
+      </Route>
+      <Route path="/advanced-analytics">
+        {() => <ProtectedRoute component={AdvancedAnalytics} />}
+      </Route>
+      <Route path="/data-management">
+        {() => <ProtectedRoute component={DataManagement} />}
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={Profile} />}
