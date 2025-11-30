@@ -1,0 +1,266 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Activity, Shield, AlertTriangle, Zap, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SystemHealthBanner } from "@/components/SystemHealthBanner";
+import { GridVisualization } from "@/components/GridVisualization";
+import { AlertStream } from "@/components/AlertStream";
+import { MetricsGrid } from "@/components/MetricsCards";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type {
+  SystemHealthMetrics,
+  GridNode,
+  GridEdge,
+  GridTopology,
+  Alert,
+} from "@shared/schema";
+
+const mockHealthMetrics: SystemHealthMetrics = {
+  securityIndex: 94.2,
+  detectionRate: 97.8,
+  falseAlarmRate: 2.1,
+  gridReliabilityScore: 99.1,
+  activeSimulations: 3,
+  alertsLast24h: 12,
+};
+
+const generateIEEE14Nodes = (): GridNode[] => {
+  const physicalNodes: GridNode[] = [
+    { id: "gen1", type: "generator", layer: "physical", x: 0.15, y: 0.2, status: "normal", anomalyScore: 0, label: "Gen 1" },
+    { id: "gen2", type: "generator", layer: "physical", x: 0.85, y: 0.2, status: "normal", anomalyScore: 0, label: "Gen 2" },
+    { id: "bus1", type: "bus", layer: "physical", x: 0.2, y: 0.35, status: "normal", anomalyScore: 0, label: "Bus 1" },
+    { id: "bus2", type: "bus", layer: "physical", x: 0.4, y: 0.3, status: "warning", anomalyScore: 0.3, label: "Bus 2" },
+    { id: "bus3", type: "bus", layer: "physical", x: 0.6, y: 0.3, status: "normal", anomalyScore: 0, label: "Bus 3" },
+    { id: "bus4", type: "bus", layer: "physical", x: 0.8, y: 0.35, status: "normal", anomalyScore: 0, label: "Bus 4" },
+    { id: "bus5", type: "bus", layer: "physical", x: 0.3, y: 0.5, status: "normal", anomalyScore: 0, label: "Bus 5" },
+    { id: "bus6", type: "bus", layer: "physical", x: 0.5, y: 0.5, status: "critical", anomalyScore: 0.85, label: "Bus 6" },
+    { id: "bus7", type: "bus", layer: "physical", x: 0.7, y: 0.5, status: "normal", anomalyScore: 0, label: "Bus 7" },
+    { id: "load1", type: "load", layer: "physical", x: 0.25, y: 0.7, status: "normal", anomalyScore: 0, label: "Load 1" },
+    { id: "load2", type: "load", layer: "physical", x: 0.5, y: 0.7, status: "normal", anomalyScore: 0, label: "Load 2" },
+    { id: "load3", type: "load", layer: "physical", x: 0.75, y: 0.7, status: "normal", anomalyScore: 0, label: "Load 3" },
+    { id: "tf1", type: "transformer", layer: "physical", x: 0.35, y: 0.4, status: "normal", anomalyScore: 0, label: "TF 1" },
+    { id: "tf2", type: "transformer", layer: "physical", x: 0.65, y: 0.4, status: "normal", anomalyScore: 0, label: "TF 2" },
+  ];
+
+  const cyberNodes: GridNode[] = [
+    { id: "plc1", type: "plc", layer: "cyber", x: 0.15, y: 0.85, status: "normal", anomalyScore: 0, label: "PLC 1" },
+    { id: "plc2", type: "plc", layer: "cyber", x: 0.35, y: 0.85, status: "normal", anomalyScore: 0, label: "PLC 2" },
+    { id: "plc3", type: "plc", layer: "cyber", x: 0.55, y: 0.85, status: "warning", anomalyScore: 0.4, label: "PLC 3" },
+    { id: "router1", type: "router", layer: "cyber", x: 0.45, y: 0.95, status: "normal", anomalyScore: 0, label: "Router" },
+    { id: "hmi1", type: "hmi", layer: "cyber", x: 0.75, y: 0.85, status: "normal", anomalyScore: 0, label: "HMI" },
+    { id: "pmu1", type: "pmu", layer: "cyber", x: 0.9, y: 0.85, status: "normal", anomalyScore: 0, label: "PMU" },
+  ];
+
+  return [...physicalNodes, ...cyberNodes];
+};
+
+const generateIEEE14Edges = (): GridEdge[] => {
+  const physicalEdges: GridEdge[] = [
+    { source: "gen1", target: "bus1", type: "physical", weight: 1 },
+    { source: "gen2", target: "bus4", type: "physical", weight: 1 },
+    { source: "bus1", target: "bus2", type: "physical", weight: 1 },
+    { source: "bus2", target: "bus3", type: "physical", weight: 1 },
+    { source: "bus3", target: "bus4", type: "physical", weight: 1 },
+    { source: "bus1", target: "bus5", type: "physical", weight: 1 },
+    { source: "bus2", target: "tf1", type: "physical", weight: 1 },
+    { source: "tf1", target: "bus6", type: "physical", weight: 1 },
+    { source: "bus3", target: "tf2", type: "physical", weight: 1 },
+    { source: "tf2", target: "bus7", type: "physical", weight: 1 },
+    { source: "bus5", target: "bus6", type: "physical", weight: 1 },
+    { source: "bus6", target: "bus7", type: "physical", weight: 1 },
+    { source: "bus5", target: "load1", type: "physical", weight: 1 },
+    { source: "bus6", target: "load2", type: "physical", weight: 1 },
+    { source: "bus7", target: "load3", type: "physical", weight: 1 },
+  ];
+
+  const cyberEdges: GridEdge[] = [
+    { source: "plc1", target: "router1", type: "cyber", weight: 1 },
+    { source: "plc2", target: "router1", type: "cyber", weight: 1 },
+    { source: "plc3", target: "router1", type: "cyber", weight: 1 },
+    { source: "router1", target: "hmi1", type: "cyber", weight: 1 },
+    { source: "router1", target: "pmu1", type: "cyber", weight: 1 },
+  ];
+
+  const couplingEdges: GridEdge[] = [
+    { source: "gen1", target: "plc1", type: "coupling", weight: 0.5 },
+    { source: "bus5", target: "plc2", type: "coupling", weight: 0.5 },
+    { source: "bus6", target: "plc3", type: "coupling", weight: 0.5 },
+    { source: "load2", target: "pmu1", type: "coupling", weight: 0.5 },
+  ];
+
+  return [...physicalEdges, ...cyberEdges, ...couplingEdges];
+};
+
+const mockAlerts: Alert[] = [
+  {
+    id: "1",
+    userId: null,
+    simulationId: null,
+    attackType: "FDI",
+    severity: "critical",
+    affectedNodes: ["bus6", "plc3"],
+    confidenceScore: 0.94,
+    classification: "malicious",
+    mitigationRecommendation: "Isolate affected nodes and verify sensor readings",
+    isAcknowledged: false,
+    createdAt: new Date(Date.now() - 60000),
+  },
+  {
+    id: "2",
+    userId: null,
+    simulationId: null,
+    attackType: "RW",
+    severity: "high",
+    affectedNodes: ["plc2", "hmi1"],
+    confidenceScore: 0.87,
+    classification: "malicious",
+    mitigationRecommendation: "Disconnect compromised systems from network",
+    isAcknowledged: false,
+    createdAt: new Date(Date.now() - 300000),
+  },
+  {
+    id: "3",
+    userId: null,
+    simulationId: null,
+    attackType: "BF",
+    severity: "medium",
+    affectedNodes: ["router1"],
+    confidenceScore: 0.72,
+    classification: "malicious",
+    mitigationRecommendation: "Enable account lockout and review access logs",
+    isAcknowledged: true,
+    createdAt: new Date(Date.now() - 600000),
+  },
+  {
+    id: "4",
+    userId: null,
+    simulationId: null,
+    attackType: "RS",
+    severity: "high",
+    affectedNodes: ["plc1"],
+    confidenceScore: 0.91,
+    classification: "malicious",
+    mitigationRecommendation: "Kill reverse shell process and update firewall rules",
+    isAcknowledged: false,
+    createdAt: new Date(Date.now() - 900000),
+  },
+  {
+    id: "5",
+    userId: null,
+    simulationId: null,
+    attackType: "BD",
+    severity: "low",
+    affectedNodes: ["pmu1"],
+    confidenceScore: 0.65,
+    classification: "benign",
+    mitigationRecommendation: null,
+    isAcknowledged: false,
+    createdAt: new Date(Date.now() - 1200000),
+  },
+];
+
+export default function Dashboard() {
+  const { toast } = useToast();
+  const [nodes] = useState<GridNode[]>(generateIEEE14Nodes());
+  const [edges] = useState<GridEdge[]>(generateIEEE14Edges());
+  const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
+  const [highlightedNodes, setHighlightedNodes] = useState<string[]>(["bus6", "plc3"]);
+  const [healthMetrics] = useState<SystemHealthMetrics>(mockHealthMetrics);
+
+  const handleAcknowledge = (alertId: string) => {
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId ? { ...alert, isAcknowledged: true } : alert
+      )
+    );
+    toast({
+      title: "Alert Acknowledged",
+      description: "The alert has been marked as acknowledged.",
+    });
+  };
+
+  const handleNodeClick = (node: GridNode) => {
+    toast({
+      title: node.label,
+      description: `${node.type.charAt(0).toUpperCase() + node.type.slice(1)} - Status: ${node.status}`,
+    });
+  };
+
+  const metricsData = [
+    {
+      title: "Detection Rate",
+      value: healthMetrics.detectionRate,
+      unit: "%",
+      trend: 2.3,
+      trendLabel: "vs last week",
+      icon: <Activity className="h-4 w-4" />,
+      color: "success" as const,
+    },
+    {
+      title: "False Alarm Rate",
+      value: healthMetrics.falseAlarmRate,
+      unit: "%",
+      trend: -0.5,
+      trendLabel: "vs last week",
+      icon: <AlertTriangle className="h-4 w-4" />,
+      color: "warning" as const,
+    },
+    {
+      title: "Security Index",
+      value: healthMetrics.securityIndex,
+      unit: "%",
+      trend: 1.2,
+      trendLabel: "vs last week",
+      icon: <Shield className="h-4 w-4" />,
+      color: "default" as const,
+    },
+    {
+      title: "Grid Reliability",
+      value: healthMetrics.gridReliabilityScore,
+      unit: "%",
+      trend: 0.1,
+      trendLabel: "vs last week",
+      icon: <Zap className="h-4 w-4" />,
+      color: "success" as const,
+    },
+  ];
+
+  return (
+    <div className="flex flex-col h-full">
+      <SystemHealthBanner metrics={healthMetrics} />
+      
+      <div className="flex-1 p-4 space-y-4 overflow-auto">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Monitoring Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              Real-time cyber-physical grid monitoring with GNN-based detection
+            </p>
+          </div>
+          <Button variant="outline" size="sm" data-testid="button-refresh">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+
+        <MetricsGrid metrics={metricsData} />
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <GridVisualization
+              nodes={nodes}
+              edges={edges}
+              topology="ieee14"
+              highlightedNodes={highlightedNodes}
+              onNodeClick={handleNodeClick}
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <AlertStream alerts={alerts} onAcknowledge={handleAcknowledge} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
