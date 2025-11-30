@@ -12,7 +12,7 @@ import {
   LogOut,
   CheckCircle2,
   Layers,
-  GitNetwork,
+  Network,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -120,7 +120,7 @@ const scientificItems = [
   {
     title: "Critical Node Planning",
     url: "/critical-nodes",
-    icon: GitNetwork,
+    icon: Network,
   },
 ];
 
