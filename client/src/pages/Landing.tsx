@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { InteractiveCyberSpace } from "@/components/InteractiveCyberSpace";
 
 const features = [
   {
@@ -83,8 +84,13 @@ export default function Landing() {
       </header>
 
       <main className="flex-1">
+        {/* Interactive Cyber Space Section */}
+        <section className="relative py-8 overflow-hidden">
+          <InteractiveCyberSpace />
+        </section>
+
         {/* Hero Section */}
-        <section className="relative py-20 md:py-32 overflow-hidden">
+        <section className="relative py-16 md:py-24 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-secondary/5 to-transparent" />
           <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full filter blur-3xl liquid-blob opacity-60" />
           <div className="absolute bottom-0 left-20 w-72 h-72 bg-gradient-to-tr from-secondary/20 to-primary/20 rounded-full filter blur-3xl liquid-blob opacity-50" />
