@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Play, Pause, RotateCcw, Zap } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
+import { GridAnimation3Bus } from "./GridAnimation3Bus";
 
 interface GridMeasurement {
   time: number;
@@ -29,6 +30,8 @@ export function SmartGridSimulator() {
   const [selectedAttack, setSelectedAttack] = useState("none");
   const [detections, setDetections] = useState<any[]>([]);
   const [protectionActions, setProtectionActions] = useState<any[]>([]);
+  const [protectedZone, setProtectedZone] = useState<string | undefined>();
+  const [lastAttackedBus, setLastAttackedBus] = useState<string>("");
 
   // Simulate grid data with attack injection
   useEffect(() => {
@@ -96,20 +99,30 @@ export function SmartGridSimulator() {
           
           // Simulate ML detection and protection actions
           if (attackDetected && !prev.some(p => p.attack_detected)) {
+            const attackedBus = `Bus${Math.floor(Math.random() * 3) + 1}`;
+            setLastAttackedBus(attackedBus);
+            setProtectedZone(attackedBus); // Isolate the attacked zone
+            
             setDetections(d => [...d, {
               timestamp: new Date(),
               attack_type: attackTypeTriggered,
               confidence: (0.85 + Math.random() * 0.15).toFixed(3),
-              affected_buses: `Bus ${Math.floor(Math.random() * 3) + 1}`,
+              affected_buses: attackedBus,
             }]);
             
             // Simulate protection action (breaker trip)
             setProtectionActions(pa => [...pa, {
               timestamp: new Date(),
-              action: "Breaker Trip",
-              target: `CB_Bus${Math.floor(Math.random() * 3) + 1}`,
+              action: "Zone Protection Activated",
+              target: `${attackedBus} Isolated`,
               status: "Executed",
             }]);
+            
+            toast({
+              title: "Zone Protection Triggered",
+              description: `${attackedBus} has been isolated from the grid.`,
+              variant: "destructive",
+            });
           }
 
           return updated.slice(-100); // Keep last 100 points
@@ -128,6 +141,10 @@ export function SmartGridSimulator() {
     setIsRunning(false);
     setDetections([]);
     setProtectionActions([]);
+    setProtectedZone(undefined);
+    setLastAttackedBus("");
+    setAttackMode(false);
+    setSelectedAttack("none");
   };
 
   const currentData = data[data.length - 1] || {
@@ -157,6 +174,21 @@ export function SmartGridSimulator() {
         <h2 className="text-3xl font-bold text-foreground">3-Bus Smart Grid Cyber-Physical Testbed</h2>
         <p className="text-muted-foreground">Real-time MATLAB Simulink integration with ST-GNN ML attack detection and automated SCADA protection</p>
       </div>
+
+      {/* 3-Bus Grid Animation */}
+      <GridAnimation3Bus
+        bus1Voltage={currentData.bus1_voltage}
+        bus2Voltage={currentData.bus2_voltage}
+        bus3Voltage={currentData.bus3_voltage}
+        bus1Current={currentData.bus1_current}
+        bus2Current={currentData.bus2_current}
+        bus3Current={currentData.bus3_current}
+        attackMode={attackMode}
+        selectedAttack={selectedAttack}
+        attackDetected={currentData.attack_detected}
+        protectedZone={protectedZone}
+        isRunning={isRunning}
+      />
 
       {/* System Status */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
