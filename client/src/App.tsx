@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/lib/theme";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ScanEffect } from "@/components/ScanEffect";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
@@ -106,6 +107,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <ScanEffect />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Activity, Shield, AlertTriangle, Zap, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
+import { Activity, Shield, AlertTriangle, Zap, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,10 @@ import { SystemHealthBanner } from "@/components/SystemHealthBanner";
 import { GridVisualization } from "@/components/GridVisualization";
 import { AlertStream } from "@/components/AlertStream";
 import { MetricsGrid } from "@/components/MetricsCards";
+import { CPFusionVisualizer } from "@/components/CPFusionVisualizer";
+import { GNNMetricsPanel } from "@/components/GNNMetricsPanel";
+import { AttackTypeMatrix } from "@/components/AttackTypeMatrix";
+import { DataRefreshControl } from "@/components/DataRefreshControl";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useVirtualLabState } from "@/lib/virtualLabContext";
@@ -172,6 +176,26 @@ export default function Dashboard() {
   const [highlightedNodes, setHighlightedNodes] = useState<string[]>(["bus6", "plc3"]);
   const [healthMetrics] = useState<SystemHealthMetrics>(mockHealthMetrics);
   const [showAttackMetrics, setShowAttackMetrics] = useState(false);
+  const [autoRefreshVirtual, setAutoRefreshVirtual] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  const handleRefreshData = () => {
+    setLastRefresh(new Date());
+    toast({
+      title: "Data Refreshed",
+      description: "Virtual Lab data synchronized with Dashboard",
+    });
+  };
+
+  useEffect(() => {
+    if (!autoRefreshVirtual) return;
+    
+    const interval = setInterval(() => {
+      handleRefreshData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [autoRefreshVirtual, toast]);
 
   useEffect(() => {
     if (virtualLabState.isRunning && virtualLabState.nodes.length > 0) {
@@ -181,7 +205,7 @@ export default function Dashboard() {
         setHighlightedNodes(virtualLabState.inferenceResult.affectedNodes);
       }
     }
-  }, [virtualLabState.nodes, virtualLabState.inferenceResult, virtualLabState.isRunning]);
+  }, [virtualLabState.nodes, virtualLabState.inferenceResult, virtualLabState.isRunning, lastRefresh]);
 
   const handleAcknowledge = (alertId: string) => {
     setAlerts((prev) =>
@@ -242,24 +266,56 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-br from-background via-primary/2 to-background">
       <SystemHealthBanner metrics={healthMetrics} />
       
       <div className="flex-1 p-4 space-y-4 overflow-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Monitoring Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Real-time cyber-physical grid monitoring with GNN-based detection
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-primary bg-clip-text text-transparent">
+              Cyber-Physical Monitoring
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              GNN-based multi-modal intrusion detection with CP fusion
             </p>
           </div>
-          <Button variant="outline" size="sm" data-testid="button-refresh">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
+          <DataRefreshControl 
+            onRefresh={handleRefreshData}
+            onToggleAutoRefresh={setAutoRefreshVirtual}
+          />
         </div>
 
+        {showAttackMetrics && <GNNMetricsPanel 
+          metrics={{
+            detectionRate: virtualLabState.inferenceResult?.confidenceScore ? virtualLabState.inferenceResult.confidenceScore * 100 : 97.8,
+            falseAlarmRate: 1.2,
+            inferenceTime: virtualLabState.inferenceResult?.inferenceTimeMs || 12.5,
+            scalability: 6,
+          }}
+        />}
+
         <MetricsGrid metrics={metricsData} />
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <CPFusionVisualizer data={{
+              cyberFeatures: [
+                { label: "Network Traffic Anomaly", value: 0.65, anomaly: 0.45 },
+                { label: "SCADA Command Deviation", value: 0.58, anomaly: 0.38 },
+                { label: "Router Port Activity", value: 0.42, anomaly: 0.12 },
+              ],
+              physicalFeatures: [
+                { label: "Frequency Deviation", value: 0.72, anomaly: 0.52 },
+                { label: "Voltage Variance", value: 0.68, anomaly: 0.48 },
+                { label: "Load Flow Inconsistency", value: 0.55, anomaly: 0.25 },
+              ],
+              fusedScore: virtualLabState.afterAttackMetrics.avgAnomalyScore || 0.65,
+            }} />
+          </div>
+          <div>
+            <AttackTypeMatrix />
+          </div>
+        </div>
 
         {showAttackMetrics && virtualLabState.isRunning && (
           <div className="grid gap-4 md:grid-cols-4">
