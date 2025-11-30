@@ -6,12 +6,11 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        lg: ".5625rem",
+        md: ".375rem",
+        sm: ".1875rem",
       },
       colors: {
-        // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
@@ -108,10 +107,34 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "liquid-blob": {
+          "0%": { transform: "translate(0, 0) scale(1)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+          "25%": { transform: "translate(20px, -20px) scale(1.1)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
+          "50%": { transform: "translate(-10px, 10px) scale(0.9)", borderRadius: "70% 30% 40% 60% / 40% 60% 30% 70%" },
+          "75%": { transform: "translate(-20px, -10px) scale(1.05)", borderRadius: "40% 70% 60% 30% / 70% 40% 60% 30%" },
+          "100%": { transform: "translate(0, 0) scale(1)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+        },
+        "morphing-gradient": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        "text-shimmer": {
+          "0%": { backgroundPosition: "-1000px 0" },
+          "100%": { backgroundPosition: "1000px 0" },
+        },
+        "float-bounce": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "liquid-blob": "liquid-blob 8s ease-in-out infinite",
+        "morphing-gradient": "morphing-gradient 8s ease infinite",
+        "text-shimmer": "text-shimmer 2s linear infinite",
+        "float-bounce": "float-bounce 3s ease-in-out infinite",
       },
     },
   },
