@@ -14,6 +14,7 @@ import {
   Layers,
   Network,
   Cpu,
+  Brain,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -122,6 +123,11 @@ const scientificItems = [
     title: "Critical Node Planning",
     url: "/critical-nodes",
     icon: Network,
+  },
+  {
+    title: "ML Datasets & Models",
+    url: "/ml-datasets",
+    icon: Brain,
   },
   {
     title: "Backend Setup",

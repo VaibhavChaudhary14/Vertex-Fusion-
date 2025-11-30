@@ -31,6 +31,7 @@ import ScientificValidation from "@/pages/ScientificValidation";
 import DataFusionEngine from "@/pages/DataFusionEngine";
 import CriticalNodePlanning from "@/pages/CriticalNodePlanning";
 import BackendSetup from "@/pages/BackendSetup";
+import MLDatasetsAndModels from "@/pages/MLDatasetsAndModels";
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const sidebarStyle = {
@@ -140,6 +141,9 @@ function Router() {
       </Route>
       <Route path="/backend-setup">
         {() => <ProtectedRoute component={BackendSetup} />}
+      </Route>
+      <Route path="/ml-datasets">
+        {() => <ProtectedRoute component={MLDatasetsAndModels} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
