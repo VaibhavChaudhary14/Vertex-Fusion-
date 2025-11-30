@@ -84,25 +84,34 @@ export function AdvancedCyberScene() {
         p.y += p.vy;
         p.z += p.vz;
 
+        // Keep Z within bounds to prevent negative radius
+        if (p.z < -50) p.z = 100;
+        if (p.z > 100) p.z = -50;
+
         // Wrap around
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // Mouse attraction
+        // Dampen velocity to prevent chaotic movement
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+
+        // Mouse attraction with distance check
         const dx = mousePos.x - p.x;
         const dy = mousePos.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 200) {
-          p.vx += dx / dist * 0.5;
-          p.vy += dy / dist * 0.5;
+        if (dist < 200 && dist > 0) {
+          p.vx += (dx / dist) * 0.3;
+          p.vy += (dy / dist) * 0.3;
         }
 
-        // Size based on Z depth
-        const scale = 100 / (100 + p.z);
-        const size = p.size * scale;
+        // Size based on Z depth - ensure always positive
+        const scale = Math.max(0.1, 100 / (100 + Math.max(0, p.z)));
+        const size = Math.max(0.5, p.size * scale);
 
+        // Draw particle with safe radius
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
@@ -110,7 +119,7 @@ export function AdvancedCyberScene() {
 
         // Glow effect
         ctx.strokeStyle = p.color.replace("0.8", "0.3");
-        ctx.lineWidth = size;
+        ctx.lineWidth = Math.max(0.5, size);
         ctx.beginPath();
         ctx.arc(p.x, p.y, size + 3, 0, Math.PI * 2);
         ctx.stroke();
