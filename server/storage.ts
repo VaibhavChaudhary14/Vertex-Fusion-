@@ -8,7 +8,6 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, sql } from "drizzle-orm";
-import { v4 as uuidv4 } from "crypto";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
