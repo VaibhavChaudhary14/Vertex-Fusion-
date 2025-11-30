@@ -17,10 +17,21 @@ export async function registerRoutes(
 
   app.get("/api/auth/user", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req as any).userId;
+      const userAuth = req.user as any;
+      const userId = userAuth?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        const newUser = await storage.upsertUser({
+          id: userId,
+          email: userAuth?.claims?.email,
+          firstName: userAuth?.claims?.first_name,
+          lastName: userAuth?.claims?.last_name,
+          profileImageUrl: userAuth?.claims?.profile_image_url,
+        });
+        return res.json(newUser);
       }
       res.json(user);
     } catch (error) {
