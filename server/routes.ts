@@ -372,6 +372,16 @@ Format responses with clear structure using markdown when helpful.`;
     })(req, res, next);
   });
 
+  app.get("/api/logout", (req, res) => {
+    req.logOut((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie("connect.sid");
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+
   // ============ PASSWORD RESET ENDPOINTS ============
 
   app.post("/api/auth/forgot-password", async (req, res) => {
