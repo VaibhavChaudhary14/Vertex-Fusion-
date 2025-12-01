@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { sendEmail } from "./sendgridUtil";
+import { sendVerificationEmail, sendPasswordResetEmail } from "./sendgridUtil";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
 import passport from "passport";
@@ -274,15 +274,10 @@ Format responses with clear structure using markdown when helpful.`;
       
       // Send verification email via SendGrid
       const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
-      console.log(`📧 Sending verification email to ${email}`);
-      const emailSent = await sendEmail(
-        email,
-        "Verify your Vertex Fusion account",
-        `<p>Welcome ${firstName}!</p><p><a href="${verificationLink}">Verify your email</a></p>`
-      );
+      const emailResult = await sendVerificationEmail(email, firstName, verificationLink);
 
-      if (!emailSent) {
-        console.warn("⚠️ Email verification send failed, but account created. User can retry verification.");
+      if (!emailResult.success) {
+        console.warn(`⚠️ [Auth] Email verification send failed for ${email}: ${emailResult.error}`);
       }
 
       // Return success without auto-login - user must verify email first
@@ -366,11 +361,11 @@ Format responses with clear structure using markdown when helpful.`;
 
       // Send reset email via SendGrid
       const resetLink = `${req.protocol}://${req.hostname}/reset-password?token=${resetToken}&email=${email}`;
-      await sendEmail(
-        email,
-        "Reset your Vertex Fusion password",
-        `<p>Click the link below to reset your password. This link expires in 24 hours.</p><p><a href="${resetLink}">Reset Password</a></p>`
-      );
+      const emailResult = await sendPasswordResetEmail(email, resetLink);
+      
+      if (!emailResult.success) {
+        console.warn(`⚠️ [Auth] Password reset email send failed for ${email}: ${emailResult.error}`);
+      }
 
       res.json({ success: true, message: "If the email exists, a reset link has been sent" });
     } catch (error) {
