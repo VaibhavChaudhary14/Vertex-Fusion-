@@ -57,24 +57,25 @@ export async function sendEmail(to: string, subject: string, html: string) {
     const { apiKey, fromEmail } = await getCredentials();
 
     if (!apiKey) {
-      console.error("SendGrid API key not configured");
+      console.error("❌ SendGrid API key not configured - cannot send email");
       return false;
     }
 
+    console.log(`📧 Sending email to ${to} with subject: ${subject}`);
     const sgMail = require("@sendgrid/mail");
     sgMail.setApiKey(apiKey);
 
-    await sgMail.send({
+    const result = await sgMail.send({
       to,
       from: fromEmail,
       subject,
       html,
     });
 
-    console.log("Email sent successfully to", to);
+    console.log(`✅ Email sent successfully to ${to}`, result);
     return true;
   } catch (error) {
-    console.error("SendGrid email error:", error);
+    console.error(`❌ SendGrid email error for ${to}:`, error);
     return false;
   }
 }

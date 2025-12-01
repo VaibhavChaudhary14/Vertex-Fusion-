@@ -260,6 +260,7 @@ Format responses with clear structure using markdown when helpful.`;
       const passwordHash = await bcrypt.default.hash(password, 10);
       const emailVerificationToken = Math.random().toString(36).substring(2, 15);
       
+      console.log(`📝 Creating user: ${email}`);
       const user = await storage.upsertUser({
         id: email,
         email,
@@ -273,22 +274,26 @@ Format responses with clear structure using markdown when helpful.`;
       
       // Send verification email via SendGrid
       const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
-      await sendEmail(
+      console.log(`📧 Sending verification email to ${email}`);
+      const emailSent = await sendEmail(
         email,
         "Verify your Vertex Fusion account",
         `<p>Welcome ${firstName}!</p><p><a href="${verificationLink}">Verify your email</a></p>`
       );
 
-      // Auto-login the user after signup
-      req.logIn({ ...user, isLocal: true }, (err) => {
-        if (err) {
-          console.error("Auto-login error:", err);
-          return res.status(200).json({ success: true, message: "Account created successfully", userId: user.id, requiresLogin: true });
-        }
-        res.json({ success: true, message: "Account created successfully", userId: user.id });
+      if (!emailSent) {
+        console.warn("⚠️ Email verification send failed, but account created. User can retry verification.");
+      }
+
+      // Return success without auto-login - user must verify email first
+      res.json({ 
+        success: true, 
+        message: "Account created! Please check your email to verify your account.", 
+        userId: user.id,
+        requiresEmailVerification: true 
       });
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("❌ Signup error:", error);
       res.status(500).json({ message: "Failed to create account" });
     }
   });

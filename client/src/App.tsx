@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
+import CheckEmail from "@/pages/CheckEmail";
 import Dashboard from "@/pages/Dashboard";
 import VirtualLab from "@/pages/VirtualLab";
 import Knowledge from "@/pages/Knowledge";
@@ -84,6 +85,12 @@ function Router() {
         </Route>
         <Route path="/verify-email">
           {() => <VerifyEmail />}
+        </Route>
+        <Route path="/check-email">
+          {() => {
+            const email = typeof window !== "undefined" ? sessionStorage.getItem("signupEmail") : undefined;
+            return <CheckEmail email={email || "your email"} />;
+          }}
         </Route>
         <Route component={NotFound} />
       </Switch>

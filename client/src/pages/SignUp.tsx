@@ -82,17 +82,19 @@ export default function SignUp() {
         return;
       }
 
-      // Invalidate auth query to refresh user state
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      const result = await response.json();
 
       toast({
         title: "Account created!",
-        description: "Redirecting to dashboard...",
+        description: result.message || "Check your email to verify your account",
       });
+
+      // Store email for display on check email page
+      sessionStorage.setItem("signupEmail", data.email);
       
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 500);
+        navigate("/check-email");
+      }, 1000);
     } catch (error) {
       toast({
         title: "Error",
