@@ -155,13 +155,14 @@ You have deep expertise in:
 Provide concise, actionable advice. Reference specific attack detection methods and mitigation strategies when relevant.
 Format responses with clear structure using markdown when helpful.`;
 
-          const result = await genAI.generateContent({
+          const request = {
             contents: [
               { role: "user", parts: [{ text: systemPrompt + "\n\nUser question: " + message }] }
             ]
-          });
+          };
 
-          response = result.response?.text() || "I apologize, but I couldn't generate a response. Please try again.";
+          const result = await (genAI as any).generateContent(request);
+          response = result?.response?.text() || "I apologize, but I couldn't generate a response. Please try again.";
         } catch (aiError) {
           console.error("AI generation error:", aiError);
           response = getOfflineResponse(message);

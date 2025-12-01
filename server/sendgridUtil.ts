@@ -1,12 +1,12 @@
-// Mailtrap Email Utility with Enhanced Error Handling
-// Uses nodemailer for SMTP with Mailtrap
-
-import nodemailer from "nodemailer";
+// Mailtrap Email Utility using API
+// Uses Mailtrap Email API for reliable delivery
 
 const FROM_EMAIL = "noreply@gridguardian.ai";
 const FROM_NAME = "Vertex Fusion";
 const EMAIL_RETRY_ATTEMPTS = 3;
 const EMAIL_RETRY_DELAY = 1000; // 1 second
+const MAILTRAP_API_HOST = "sandbox.api.mailtrap.io";
+const MAILTRAP_INBOX_ID = "3186308"; // Sandbox inbox ID
 
 interface SendEmailResult {
   success: boolean;
@@ -23,31 +23,7 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Creates and returns a Mailtrap transporter instance
- */
-function getMailtrapTransporter() {
-  const host = process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io";
-  const port = parseInt(process.env.MAILTRAP_PORT || "2525");
-  const user = process.env.MAILTRAP_USER;
-  const pass = process.env.MAILTRAP_PASS;
-
-  if (!user || !pass) {
-    throw new Error("Mailtrap credentials not configured (MAILTRAP_USER or MAILTRAP_PASS missing)");
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    auth: {
-      user,
-      pass,
-    },
-    secure: port === 465, // Use TLS for port 465
-  });
-}
-
-/**
- * Sends email using Mailtrap SMTP with retry logic
+ * Sends email using Mailtrap API with retry logic
  */
 export async function sendEmail(
   to: string,
@@ -56,6 +32,16 @@ export async function sendEmail(
   attempts = 0
 ): Promise<SendEmailResult> {
   try {
+    const apiToken = process.env.MAILTRAP_TOKEN;
+
+    if (!apiToken) {
+      console.error("❌ [Email] Mailtrap API token not configured");
+      return {
+        success: false,
+        error: "Mailtrap API token not configured",
+      };
+    }
+
     // Validate email format
     if (!isValidEmail(to)) {
       console.error(`❌ [Email] Invalid recipient email: ${to}`);
@@ -79,31 +65,48 @@ export async function sendEmail(
       `[${timestamp}] 📧 [Email] Sending to: ${to} | Subject: ${subject} | Attempt: ${attempts + 1}/${EMAIL_RETRY_ATTEMPTS}`
     );
 
-    // Get transporter with credentials check
-    let transporter;
-    try {
-      transporter = getMailtrapTransporter();
-    } catch (credentialError: any) {
-      console.error(`❌ [Email] ${credentialError.message}`);
-      return {
-        success: false,
-        error: credentialError.message,
-      };
-    }
-
-    // Send email
-    const info = await transporter.sendMail({
-      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
-      to,
+    // Prepare email payload
+    const payload = {
+      to: [
+        {
+          email: to,
+        },
+      ],
+      from: {
+        email: FROM_EMAIL,
+        name: FROM_NAME,
+      },
       subject,
       html,
+    };
+
+    // Send via Mailtrap API
+    const response = await fetch(`https://${MAILTRAP_API_HOST}/api/send/${MAILTRAP_INBOX_ID}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Api-Token": apiToken,
+      },
+      body: JSON.stringify(payload),
     });
 
-    console.log(`[${new Date().toISOString()}] ✅ [Email] Sent successfully to: ${to} | MessageId: ${info.messageId}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Mailtrap API error ${response.status}: ${errorData?.message || response.statusText}`
+      );
+    }
+
+    const result = await response.json();
+    const messageId = result?.message_ids?.[0] || result?.id;
+
+    console.log(
+      `[${new Date().toISOString()}] ✅ [Email] Sent successfully to: ${to} | MessageId: ${messageId}`
+    );
 
     return {
       success: true,
-      messageId: info.messageId,
+      messageId,
     };
   } catch (error: any) {
     const timestamp = new Date().toISOString();
@@ -113,22 +116,15 @@ export async function sendEmail(
     console.error(`   Error Type: ${error?.name || "Unknown"}`);
     console.error(`   Message: ${error?.message}`);
 
-    if (error?.code) {
-      console.error(`   Error Code: ${error.code}`);
-    }
-
-    if (error?.response) {
-      console.error(`   Response:`, error.response);
-    }
-
     // Retry logic for transient failures
     if (attempts < EMAIL_RETRY_ATTEMPTS - 1) {
       const isTransientError =
-        error?.code === "ECONNREFUSED" ||
-        error?.code === "ETIMEDOUT" ||
-        error?.code === "ENOTFOUND" ||
-        error?.code === "ECONNRESET" ||
-        (error?.response?.status >= 500 && error?.response?.status < 600);
+        error?.message?.includes("ECONNREFUSED") ||
+        error?.message?.includes("ETIMEDOUT") ||
+        error?.message?.includes("ENOTFOUND") ||
+        error?.message?.includes("502") ||
+        error?.message?.includes("503") ||
+        error?.message?.includes("504");
 
       if (isTransientError) {
         console.log(`[${timestamp}] 🔄 [Email] Retrying in ${EMAIL_RETRY_DELAY}ms...`);
