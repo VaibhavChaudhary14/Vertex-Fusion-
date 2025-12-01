@@ -95,7 +95,7 @@ export default function Landing() {
                 </a>
                 <a href="/login">
                   <button className="px-8 py-3 border border-green-500/50 text-green-400 font-bold font-mono rounded-sm hover:bg-green-500/10 transition-all">
-                    LEARN MORE
+                    SIGN IN
                   </button>
                 </a>
               </div>
