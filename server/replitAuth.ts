@@ -244,7 +244,18 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // Handle local and Google auth (no expires_at)
+  if (user.isLocal || user.isGoogle) {
+    (req as any).userId = user.id;
+    return next();
+  }
+
+  // Handle Replit Auth (has expires_at and claims)
+  if (!user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 

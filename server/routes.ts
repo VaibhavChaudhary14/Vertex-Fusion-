@@ -18,18 +18,22 @@ export async function registerRoutes(
   app.get("/api/auth/user", isAuthenticated, async (req, res) => {
     try {
       const userAuth = req.user as any;
-      const userId = userAuth?.claims?.sub;
+      
+      // Get userId based on auth type
+      let userId = userAuth?.id || userAuth?.claims?.sub;
+      
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      
       const user = await storage.getUser(userId);
       if (!user) {
         const newUser = await storage.upsertUser({
           id: userId,
-          email: userAuth?.claims?.email,
-          firstName: userAuth?.claims?.first_name,
-          lastName: userAuth?.claims?.last_name,
-          profileImageUrl: userAuth?.claims?.profile_image_url,
+          email: userAuth?.email || userAuth?.claims?.email,
+          firstName: userAuth?.firstName || userAuth?.claims?.first_name,
+          lastName: userAuth?.lastName || userAuth?.claims?.last_name,
+          profileImageUrl: userAuth?.profileImageUrl || userAuth?.claims?.profile_image_url,
         });
         return res.json(newUser);
       }
