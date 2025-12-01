@@ -268,7 +268,7 @@ Format responses with clear structure using markdown when helpful.`;
         profileImageUrl: null,
         passwordHash,
         emailVerificationToken,
-        isEmailVerified: true,
+        isEmailVerified: false,
       });
       
       // Send verification email via SendGrid

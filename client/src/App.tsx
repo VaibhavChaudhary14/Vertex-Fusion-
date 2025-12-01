@@ -15,6 +15,7 @@ import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
 import Dashboard from "@/pages/Dashboard";
 import VirtualLab from "@/pages/VirtualLab";
 import Knowledge from "@/pages/Knowledge";
@@ -80,6 +81,9 @@ function Router() {
         </Route>
         <Route path="/reset-password">
           {() => <ResetPassword />}
+        </Route>
+        <Route path="/verify-email">
+          {() => <VerifyEmail />}
         </Route>
         <Route component={NotFound} />
       </Switch>
