@@ -1,4 +1,4 @@
-// Mailtrap Email Utility - Hybrid Support (SDK + SMTP Fallback)
+// Mailtrap Email Utility - Sandbox SMTP Only
 
 const FROM_EMAIL = "noreply@gridguardian.ai";
 const FROM_NAME = "Vertex Fusion";
@@ -20,85 +20,7 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Gets Mailtrap SDK client (REST API)
- */
-async function getMailtrapSDKClient(): Promise<any> {
-  try {
-    const { MailtrapClient } = await import("mailtrap");
-    const token = process.env.MAILTRAP_API_TOKEN;
-
-    if (!token) {
-      throw new Error("Mailtrap API token not configured");
-    }
-
-    return new MailtrapClient({ token });
-  } catch (error) {
-    throw new Error("Mailtrap SDK not available");
-  }
-}
-
-/**
- * Sends email using Mailtrap SDK (REST API)
- */
-async function sendViaSDK(to: string, subject: string, html: string): Promise<SendEmailResult> {
-  try {
-    const client = await getMailtrapSDKClient();
-
-    const response = await client.send({
-      from: { email: FROM_EMAIL, name: FROM_NAME },
-      to: [{ email: to }],
-      subject,
-      html,
-    });
-
-    const messageId = response?.message_ids?.[0] || response?.id || "sent";
-    return {
-      success: true,
-      messageId,
-    };
-  } catch (error: any) {
-    throw error;
-  }
-}
-
-/**
- * Sends email using Mailtrap SMTP (Fallback)
- */
-async function sendViaSMTP(to: string, subject: string, html: string): Promise<SendEmailResult> {
-  try {
-    const nodemailer = await import("nodemailer");
-    const transporter = nodemailer.default.createTransport({
-      host: process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io",
-      port: parseInt(process.env.MAILTRAP_PORT || "2525"),
-      auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASS,
-      },
-      secure: parseInt(process.env.MAILTRAP_PORT || "2525") === 465,
-    });
-
-    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
-      throw new Error("SMTP credentials not configured");
-    }
-
-    const info = await transporter.sendMail({
-      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
-      to,
-      subject,
-      html,
-    });
-
-    return {
-      success: true,
-      messageId: info.messageId,
-    };
-  } catch (error: any) {
-    throw error;
-  }
-}
-
-/**
- * Sends email using Mailtrap (SDK first, then SMTP fallback) with retry logic
+ * Sends email using Mailtrap SMTP Sandbox with retry logic
  */
 export async function sendEmail(
   to: string,
@@ -130,49 +52,50 @@ export async function sendEmail(
       `[${timestamp}] 📧 [Email] Sending to: ${to} | Subject: ${subject} | Attempt: ${attempts + 1}/${EMAIL_RETRY_ATTEMPTS}`
     );
 
-    let result: SendEmailResult;
-    let lastError: any;
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.default.createTransport({
+      host: process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io",
+      port: parseInt(process.env.MAILTRAP_PORT || "2525"),
+      auth: {
+        user: process.env.MAILTRAP_USER,
+        pass: process.env.MAILTRAP_PASS,
+      },
+      secure: parseInt(process.env.MAILTRAP_PORT || "2525") === 465,
+    });
 
-    // Try SDK first (REST API)
-    try {
-      console.log(`[${timestamp}] 🔄 [Email] Trying Mailtrap SDK (REST API)...`);
-      result = await sendViaSDK(to, subject, html);
-      console.log(
-        `[${new Date().toISOString()}] ✅ [Email] Sent via SDK to: ${to} | MessageId: ${result.messageId}`
-      );
-      return result;
-    } catch (sdkError: any) {
-      lastError = sdkError;
-      console.warn(
-        `[${timestamp}] ⚠️ [Email] SDK failed: ${sdkError.message}, trying SMTP fallback...`
-      );
+    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      throw new Error("SMTP credentials not configured (MAILTRAP_USER/MAILTRAP_PASS)");
     }
 
-    // Fallback to SMTP
-    try {
-      console.log(`[${timestamp}] 🔄 [Email] Trying Mailtrap SMTP (fallback)...`);
-      result = await sendViaSMTP(to, subject, html);
-      console.log(
-        `[${new Date().toISOString()}] ✅ [Email] Sent via SMTP to: ${to} | MessageId: ${result.messageId}`
-      );
-      return result;
-    } catch (smtpError: any) {
-      lastError = smtpError;
-      console.error(
-        `[${timestamp}] ❌ [Email] SMTP also failed: ${smtpError.message}`
-      );
-    }
+    const info = await transporter.sendMail({
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+      to,
+      subject,
+      html,
+    });
 
-    // Both methods failed - apply retry logic
+    console.log(
+      `[${new Date().toISOString()}] ✅ [Email] Sent successfully to: ${to} | MessageId: ${info.messageId}`
+    );
+
+    return {
+      success: true,
+      messageId: info.messageId,
+    };
+  } catch (error: any) {
+    const timestamp = new Date().toISOString();
+    console.error(`[${timestamp}] ❌ [Email] Error: ${error.message}`);
+
+    // Retry logic for transient errors
     if (attempts < EMAIL_RETRY_ATTEMPTS - 1) {
       const isTransientError =
-        lastError?.message?.includes("ECONNREFUSED") ||
-        lastError?.message?.includes("ETIMEDOUT") ||
-        lastError?.message?.includes("ENOTFOUND") ||
-        lastError?.message?.includes("ECONNRESET") ||
-        lastError?.message?.includes("502") ||
-        lastError?.message?.includes("503") ||
-        lastError?.message?.includes("504");
+        error?.message?.includes("ECONNREFUSED") ||
+        error?.message?.includes("ETIMEDOUT") ||
+        error?.message?.includes("ENOTFOUND") ||
+        error?.message?.includes("ECONNRESET") ||
+        error?.message?.includes("502") ||
+        error?.message?.includes("503") ||
+        error?.message?.includes("504");
 
       if (isTransientError) {
         console.log(`[${timestamp}] 🔄 [Email] Retrying in ${EMAIL_RETRY_DELAY}ms...`);
@@ -183,15 +106,7 @@ export async function sendEmail(
 
     return {
       success: false,
-      error: lastError?.message || "All email methods failed",
-    };
-  } catch (error: any) {
-    const timestamp = new Date().toISOString();
-    console.error(`[${timestamp}] ❌ [Email] Unexpected error: ${error.message}`);
-
-    return {
-      success: false,
-      error: error?.message || "Unknown email error",
+      error: error?.message || "Email send failed",
     };
   }
 }
