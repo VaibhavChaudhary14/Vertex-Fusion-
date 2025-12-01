@@ -57,3 +57,4 @@ integrations = ["javascript_gemini:1.0.0", "javascript_database:1.0.0", "javascr
 [userenv.shared]
 MAILTRAP_HOST = "sandbox.smtp.mailtrap.io"
 MAILTRAP_PORT = "2525"
+MAILTRAP_API_TOKEN = "${MAILTRAP_TOKEN}"
