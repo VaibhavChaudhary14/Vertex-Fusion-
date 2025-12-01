@@ -101,7 +101,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/">
-        {() => <ProtectedRoute component={Dashboard} />}
+        {() => <Landing />}
       </Route>
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
