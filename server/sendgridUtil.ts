@@ -1,5 +1,4 @@
 // SendGrid Email Utility
-import sgMail from "@sendgrid/mail";
 
 export async function sendEmail(to: string, subject: string, html: string) {
   try {
@@ -11,18 +10,21 @@ export async function sendEmail(to: string, subject: string, html: string) {
     }
 
     console.log(`📧 Sending email to ${to} with subject: ${subject}`);
+    
+    // Dynamic import for ES module compatibility
+    const sgMailModule = await import('@sendgrid/mail');
+    const sgMail = sgMailModule.default;
+    
     sgMail.setApiKey(apiKey);
 
-    // Use a verified sender email or domain
-    const fromEmail = "noreply@gridguardian.ai";
-    
-    const result = await sgMail.send({
+    const msg = {
       to,
-      from: fromEmail,
+      from: 'noreply@gridguardian.ai',
       subject,
       html,
-    });
+    };
 
+    const result = await sgMail.send(msg);
     console.log(`✅ Email sent successfully to ${to}`);
     return true;
   } catch (error: any) {
