@@ -64,7 +64,28 @@ export default function SignUp() {
   });
 
   const onSubmit = async (data: SignUpFormValues) => {
+    // AUTHENTICATION TEMPORARILY BYPASSED - Redirect directly to dashboard
     setIsLoading(true);
+    try {
+      toast({
+        title: "Account created!",
+        description: "Redirecting to dashboard...",
+      });
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+
+    /* COMMENTED OUT - Original authentication code
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -104,6 +125,7 @@ export default function SignUp() {
     } finally {
       setIsLoading(false);
     }
+    */
   };
 
   return (

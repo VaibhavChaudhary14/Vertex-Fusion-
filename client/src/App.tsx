@@ -59,43 +59,44 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  // AUTHENTICATION TEMPORARILY COMMENTED OUT - Users go directly to dashboard
+  // const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <div className="w-full h-screen flex items-center justify-center">Loading...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="w-full h-screen flex items-center justify-center">Loading...</div>;
+  // }
 
-  if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/">
-          {() => <Landing />}
-        </Route>
-        <Route path="/signup">
-          {() => <SignUp />}
-        </Route>
-        <Route path="/login">
-          {() => <Login />}
-        </Route>
-        <Route path="/forgot-password">
-          {() => <ForgotPassword />}
-        </Route>
-        <Route path="/reset-password">
-          {() => <ResetPassword />}
-        </Route>
-        <Route path="/verify-email">
-          {() => <VerifyEmail />}
-        </Route>
-        <Route path="/check-email">
-          {() => {
-            const email = typeof window !== "undefined" ? sessionStorage.getItem("signupEmail") : undefined;
-            return <CheckEmail email={email || "your email"} />;
-          }}
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
-    );
-  }
+  // if (!isAuthenticated) {
+  //   return (
+  //     <Switch>
+  //       <Route path="/">
+  //         {() => <Landing />}
+  //       </Route>
+  //       <Route path="/signup">
+  //         {() => <SignUp />}
+  //       </Route>
+  //       <Route path="/login">
+  //         {() => <Login />}
+  //       </Route>
+  //       <Route path="/forgot-password">
+  //         {() => <ForgotPassword />}
+  //       </Route>
+  //       <Route path="/reset-password">
+  //         {() => <ResetPassword />}
+  //       </Route>
+  //       <Route path="/verify-email">
+  //         {() => <VerifyEmail />}
+  //       </Route>
+  //       <Route path="/check-email">
+  //         {() => {
+  //           const email = typeof window !== "undefined" ? sessionStorage.getItem("signupEmail") : undefined;
+  //           return <CheckEmail email={email || "your email"} />;
+  //         }}
+  //       </Route>
+  //       <Route component={NotFound} />
+  //     </Switch>
+  //   );
+  // }
 
   return (
     <Switch>

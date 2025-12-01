@@ -36,7 +36,28 @@ export default function Login() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    // AUTHENTICATION TEMPORARILY BYPASSED - Redirect directly to dashboard
     setIsLoading(true);
+    try {
+      toast({
+        title: "Welcome!",
+        description: "Redirecting to dashboard...",
+      });
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign in. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+    
+    /* COMMENTED OUT - Original authentication code
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -74,6 +95,7 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
+    */
   };
 
   return (
@@ -176,12 +198,13 @@ export default function Login() {
               </div>
             </div>
 
-            <a href="/api/auth/google">
+            {/* GOOGLE AUTH TEMPORARILY DISABLED */}
+            {/* <a href="/api/auth/google">
               <Button variant="outline" className="w-full" data-testid="button-signin-google">
                 <SiGoogle className="h-4 w-4 mr-2" />
                 Sign in with Google
               </Button>
-            </a>
+            </a> */}
 
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
