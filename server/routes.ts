@@ -318,6 +318,47 @@ Format responses with clear structure using markdown when helpful.`;
     }
   });
 
+  app.post("/api/auth/resend-verification", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const user = await storage.getUser(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found. Please sign up first." });
+      }
+
+      if (user.isEmailVerified) {
+        return res.status(400).json({ message: "Email is already verified. You can log in." });
+      }
+
+      // Generate new verification token
+      const newToken = Math.random().toString(36).substring(2, 15);
+      
+      await storage.updateUser(email, {
+        emailVerificationToken: newToken,
+      });
+
+      // Send verification email
+      const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${newToken}&email=${email}`;
+      const firstName = user.firstName || "User";
+      const emailResult = await sendVerificationEmail(email, firstName, verificationLink);
+
+      if (!emailResult.success) {
+        console.warn(`⚠️ [Auth] Resend verification email failed for ${email}: ${emailResult.error}`);
+        return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+      }
+
+      res.json({ success: true, message: "Verification email sent successfully!" });
+    } catch (error) {
+      console.error("❌ [Auth] Resend verification error:", error);
+      res.status(500).json({ message: "Failed to resend verification email" });
+    }
+  });
+
   app.post("/api/auth/login", async (req, res, next) => {
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
