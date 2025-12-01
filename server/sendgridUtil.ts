@@ -1,7 +1,10 @@
-// SendGrid Email Utility with Enhanced Error Handling
-// Uses dynamic import for ES module compatibility
+// Mailtrap Email Utility with Enhanced Error Handling
+// Uses nodemailer for SMTP with Mailtrap
 
-const FROM_EMAIL = 'noreply@gridguardian.ai';
+import nodemailer from "nodemailer";
+
+const FROM_EMAIL = "noreply@gridguardian.ai";
+const FROM_NAME = "Vertex Fusion";
 const EMAIL_RETRY_ATTEMPTS = 3;
 const EMAIL_RETRY_DELAY = 1000; // 1 second
 
@@ -20,7 +23,31 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Sends email using SendGrid with retry logic
+ * Creates and returns a Mailtrap transporter instance
+ */
+function getMailtrapTransporter() {
+  const host = process.env.MAILTRAP_HOST || "sandbox.smtp.mailtrap.io";
+  const port = parseInt(process.env.MAILTRAP_PORT || "2525");
+  const user = process.env.MAILTRAP_USER;
+  const pass = process.env.MAILTRAP_PASS;
+
+  if (!user || !pass) {
+    throw new Error("Mailtrap credentials not configured (MAILTRAP_USER or MAILTRAP_PASS missing)");
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    auth: {
+      user,
+      pass,
+    },
+    secure: port === 465, // Use TLS for port 465
+  });
+}
+
+/**
+ * Sends email using Mailtrap SMTP with retry logic
  */
 export async function sendEmail(
   to: string,
@@ -29,22 +56,12 @@ export async function sendEmail(
   attempts = 0
 ): Promise<SendEmailResult> {
   try {
-    const apiKey = process.env.SENDGRID_API_KEY;
-    
-    if (!apiKey) {
-      console.error("❌ [Email] SendGrid API key not configured");
-      return {
-        success: false,
-        error: "SendGrid API key not configured"
-      };
-    }
-
     // Validate email format
     if (!isValidEmail(to)) {
       console.error(`❌ [Email] Invalid recipient email: ${to}`);
       return {
         success: false,
-        error: "Invalid recipient email format"
+        error: "Invalid recipient email format",
       };
     }
 
@@ -53,74 +70,76 @@ export async function sendEmail(
       console.error("❌ [Email] Missing subject or html content");
       return {
         success: false,
-        error: "Missing subject or content"
+        error: "Missing subject or content",
       };
     }
 
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] 📧 [Email] Sending to: ${to} | Subject: ${subject} | Attempt: ${attempts + 1}/${EMAIL_RETRY_ATTEMPTS}`);
-    
-    // Dynamic import for ES module compatibility
-    const sgMailModule = await import('@sendgrid/mail');
-    const sgMail = sgMailModule.default;
-    
-    sgMail.setApiKey(apiKey);
+    console.log(
+      `[${timestamp}] 📧 [Email] Sending to: ${to} | Subject: ${subject} | Attempt: ${attempts + 1}/${EMAIL_RETRY_ATTEMPTS}`
+    );
 
-    const msg = {
+    // Get transporter with credentials check
+    let transporter;
+    try {
+      transporter = getMailtrapTransporter();
+    } catch (credentialError: any) {
+      console.error(`❌ [Email] ${credentialError.message}`);
+      return {
+        success: false,
+        error: credentialError.message,
+      };
+    }
+
+    // Send email
+    const info = await transporter.sendMail({
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to,
-      from: FROM_EMAIL,
       subject,
       html,
-      trackingSettings: {
-        clickTracking: { enabled: false },
-        openTracking: { enabled: false }
-      }
-    };
+    });
 
-    const result = await sgMail.send(msg);
-    
-    const messageId = Array.isArray(result) ? result[0]?.headers?.['x-message-id'] : result?.headers?.['x-message-id'];
-    console.log(`[${new Date().toISOString()}] ✅ [Email] Sent successfully to: ${to} | MessageId: ${messageId}`);
-    
+    console.log(`[${new Date().toISOString()}] ✅ [Email] Sent successfully to: ${to} | MessageId: ${info.messageId}`);
+
     return {
       success: true,
-      messageId
+      messageId: info.messageId,
     };
-
   } catch (error: any) {
     const timestamp = new Date().toISOString();
-    
+
     // Detailed error logging
     console.error(`[${timestamp}] ❌ [Email] Failed to send to ${to}`);
-    console.error(`   Error Type: ${error?.name || 'Unknown'}`);
+    console.error(`   Error Type: ${error?.name || "Unknown"}`);
     console.error(`   Message: ${error?.message}`);
-    
-    if (error?.response?.body) {
-      console.error(`   SendGrid Response:`, error.response.body);
-    }
-    
+
     if (error?.code) {
       console.error(`   Error Code: ${error.code}`);
     }
 
+    if (error?.response) {
+      console.error(`   Response:`, error.response);
+    }
+
     // Retry logic for transient failures
     if (attempts < EMAIL_RETRY_ATTEMPTS - 1) {
-      const isTransientError = 
-        error?.code === 'ECONNREFUSED' ||
-        error?.code === 'ETIMEDOUT' ||
-        error?.code === 'ENOTFOUND' ||
+      const isTransientError =
+        error?.code === "ECONNREFUSED" ||
+        error?.code === "ETIMEDOUT" ||
+        error?.code === "ENOTFOUND" ||
+        error?.code === "ECONNRESET" ||
         (error?.response?.status >= 500 && error?.response?.status < 600);
 
       if (isTransientError) {
         console.log(`[${timestamp}] 🔄 [Email] Retrying in ${EMAIL_RETRY_DELAY}ms...`);
-        await new Promise(resolve => setTimeout(resolve, EMAIL_RETRY_DELAY));
+        await new Promise((resolve) => setTimeout(resolve, EMAIL_RETRY_DELAY));
         return sendEmail(to, subject, html, attempts + 1);
       }
     }
 
     return {
       success: false,
-      error: error?.message || 'Unknown SendGrid error'
+      error: error?.message || "Unknown email error",
     };
   }
 }
