@@ -120,7 +120,7 @@ export default function CheckEmail({ email = "your email" }: CheckEmailProps) {
                 </Button>
               </Link>
               <p className="text-xs text-center text-muted-foreground">
-                Already verified? <Link href="/login"><Button variant="link" size="sm" className="p-0 h-auto">Sign in here</Button></Link>
+                Already verified? <Link href="/login"><Button variant="ghost" size="sm" className="p-0 h-auto text-blue-400 hover:text-blue-300">Sign in here</Button></Link>
               </p>
             </div>
           </CardContent>
