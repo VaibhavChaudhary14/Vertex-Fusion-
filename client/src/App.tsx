@@ -56,7 +56,9 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/">
+        {() => <ProtectedRoute component={Dashboard} />}
+      </Route>
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
