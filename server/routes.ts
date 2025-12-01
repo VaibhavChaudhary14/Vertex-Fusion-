@@ -269,7 +269,7 @@ Format responses with clear structure using markdown when helpful.`;
       });
       
       // Send verification email via SendGrid
-      const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
+      const verificationLink = `${req.protocol}://${req.get('host')}/verify-email?token=${emailVerificationToken}&email=${email}`;
       const emailResult = await sendVerificationEmail(email, firstName, verificationLink);
 
       if (!emailResult.success) {
@@ -339,7 +339,7 @@ Format responses with clear structure using markdown when helpful.`;
       });
 
       // Send verification email
-      const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${newToken}&email=${email}`;
+      const verificationLink = `${req.protocol}://${req.get('host')}/verify-email?token=${newToken}&email=${email}`;
       const firstName = user.firstName || "User";
       const emailResult = await sendVerificationEmail(email, firstName, verificationLink);
 
@@ -397,7 +397,7 @@ Format responses with clear structure using markdown when helpful.`;
       });
 
       // Send reset email via SendGrid
-      const resetLink = `${req.protocol}://${req.hostname}/reset-password?token=${resetToken}&email=${email}`;
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}&email=${email}`;
       const emailResult = await sendPasswordResetEmail(email, resetLink);
       
       if (!emailResult.success) {
