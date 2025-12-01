@@ -42,6 +42,8 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash"),
   isEmailVerified: boolean("is_email_verified").default(false),
   emailVerificationToken: varchar("email_verification_token"),
+  resetPasswordToken: varchar("reset_password_token"),
+  resetPasswordTokenExpiry: timestamp("reset_password_token_expiry"),
   role: varchar("role", { length: 50 }).default("researcher"),
   subscriptionTier: varchar("subscription_tier", { length: 50 }).default("free"),
   apiCallsUsed: integer("api_calls_used").default(0),

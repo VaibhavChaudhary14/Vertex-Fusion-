@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { SiGoogle } from "react-icons/si";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Shield, ArrowLeft, Eye, EyeOff, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -20,10 +18,7 @@ const passwordSchema = z.string()
   .regex(/\d/, "Password must contain number")
   .regex(/[!@#$%^&*]/, "Password must contain special character (!@#$%^&*)");
 
-const signUpSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+const resetPasswordSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -31,16 +26,51 @@ const signUpSchema = z.object({
   path: ["confirmPassword"],
 });
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
-export default function SignUp() {
+export default function ResetPassword() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
+  const [isTokenValid, setIsTokenValid] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [, navigate] = useLocation();
-  const queryClient = useQueryClient();
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const email = params.get("email");
+
+  useEffect(() => {
+    const validateToken = async () => {
+      if (!token || !email) {
+        setIsValidating(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth/validate-reset-token?token=${token}&email=${email}`);
+        if (response.ok) {
+          setIsTokenValid(true);
+        }
+      } catch (error) {
+        console.error("Token validation error:", error);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    validateToken();
+  }, [token, email]);
+
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const passwordRequirements = [
     { label: "8+ characters", regex: /.{8,}/ },
@@ -52,57 +82,95 @@ export default function SignUp() {
 
   const checkRequirement = (regex: RegExp) => regex.test(password);
 
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      email: "",
-      firstName: "",
-      lastName: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const onSubmit = async (data: SignUpFormValues) => {
+  const onSubmit = async (data: ResetPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          token,
+          email,
+          password: data.password,
+        }),
       });
 
       if (!response.ok) {
         const error = await response.json();
         toast({
-          title: "Sign up failed",
-          description: error.message || "Please try again",
+          title: "Error",
+          description: error.message || "Failed to reset password",
           variant: "destructive",
         });
         return;
       }
 
-      // Invalidate auth query to refresh user state
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-
       toast({
-        title: "Account created!",
-        description: "Redirecting to dashboard...",
+        title: "Success!",
+        description: "Your password has been reset. Redirecting to login...",
       });
-      
+
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 500);
+        navigate("/login");
+      }, 1500);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: "Failed to reset password. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground">Validating reset link...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isTokenValid) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-background">
+        <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container max-w-7xl mx-auto flex items-center justify-between h-16 px-4">
+            <Link href="/">
+              <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
+                  <Shield className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="font-semibold text-lg">Vertex Fusion</span>
+              </div>
+            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-primary/30 bg-gradient-to-br from-background/80 via-primary/5 to-background/80">
+            <CardContent className="pt-6 space-y-4 text-center">
+              <p className="text-sm text-red-500 font-semibold">Invalid or Expired Link</p>
+              <p className="text-sm text-muted-foreground">
+                This password reset link has expired or is invalid. Please request a new one.
+              </p>
+              <Link href="/forgot-password">
+                <Button className="w-full">Request New Reset Link</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-background">
@@ -127,67 +195,24 @@ export default function SignUp() {
           <CardHeader className="space-y-2">
             <div className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              <Link href="/">
+              <Link href="/login">
                 <Button variant="ghost" size="sm" className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
-                  Back to home
+                  Back to login
                 </Button>
               </Link>
             </div>
-            <CardTitle className="text-2xl">Create Account</CardTitle>
-            <CardDescription>Join Vertex Fusion for advanced grid security</CardDescription>
+            <CardTitle className="text-2xl">Create New Password</CardTitle>
+            <CardDescription>Enter a strong password to reset your account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John" {...field} data-testid="input-firstname" />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Doe" {...field} data-testid="input-lastname" />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="john@example.com" type="email" {...field} data-testid="input-email" />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs">Password</FormLabel>
+                      <FormLabel className="text-xs">New Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -262,36 +287,16 @@ export default function SignUp() {
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-create-account">
-                  {isLoading ? "Creating account..." : "Create Account"}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                  data-testid="button-reset-password"
+                >
+                  {isLoading ? "Resetting..." : "Reset Password"}
                 </Button>
               </form>
             </Form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or</span>
-              </div>
-            </div>
-
-            <a href="/api/auth/google">
-              <Button variant="outline" className="w-full" data-testid="button-signup-google">
-                <SiGoogle className="h-4 w-4 mr-2" />
-                Sign up with Google
-              </Button>
-            </a>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login">
-                <Button variant="link" size="sm" className="p-0 h-auto" data-testid="link-sign-in">
-                  Sign in
-                </Button>
-              </Link>
-            </p>
           </CardContent>
         </Card>
       </div>

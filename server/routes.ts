@@ -343,6 +343,111 @@ Format responses with clear structure using markdown when helpful.`;
     })(req, res, next);
   });
 
+  // ============ PASSWORD RESET ENDPOINTS ============
+
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const user = await storage.getUser(email);
+      if (!user) {
+        // Security: don't reveal if email exists or not
+        return res.json({ success: true, message: "If the email exists, a reset link has been sent" });
+      }
+
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const expiryTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await storage.updateUser(email, {
+        resetPasswordToken: resetToken,
+        resetPasswordTokenExpiry: expiryTime,
+      });
+
+      // Send reset email via SendGrid
+      if (process.env.SENDGRID_API_KEY) {
+        try {
+          const sgMail = require("@sendgrid/mail");
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          const resetLink = `${req.protocol}://${req.hostname}/reset-password?token=${resetToken}&email=${email}`;
+          await sgMail.send({
+            to: email,
+            from: "noreply@gridguardian.ai",
+            subject: "Reset your Vertex Fusion password",
+            html: `<p>Click the link below to reset your password. This link expires in 24 hours.</p><p><a href="${resetLink}">Reset Password</a></p>`,
+          });
+        } catch (emailError) {
+          console.error("SendGrid email error:", emailError);
+          // Still return success as token was created
+        }
+      }
+
+      res.json({ success: true, message: "If the email exists, a reset link has been sent" });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process password reset request" });
+    }
+  });
+
+  app.get("/api/auth/validate-reset-token", async (req, res) => {
+    try {
+      const { token, email } = req.query;
+
+      if (!token || !email) {
+        return res.status(400).json({ message: "Missing token or email" });
+      }
+
+      const user = await storage.getUser(email as string);
+      if (!user || user.resetPasswordToken !== token) {
+        return res.status(400).json({ message: "Invalid reset token" });
+      }
+
+      if (!user.resetPasswordTokenExpiry || new Date() > user.resetPasswordTokenExpiry) {
+        return res.status(400).json({ message: "Reset token has expired" });
+      }
+
+      res.json({ success: true, message: "Token is valid" });
+    } catch (error) {
+      console.error("Token validation error:", error);
+      res.status(500).json({ message: "Failed to validate reset token" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const bcrypt = await import("bcryptjs");
+      const { token, email, password } = req.body;
+
+      if (!token || !email || !password) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const user = await storage.getUser(email);
+      if (!user || user.resetPasswordToken !== token) {
+        return res.status(400).json({ message: "Invalid reset token" });
+      }
+
+      if (!user.resetPasswordTokenExpiry || new Date() > user.resetPasswordTokenExpiry) {
+        return res.status(400).json({ message: "Reset token has expired" });
+      }
+
+      const passwordHash = await bcrypt.default.hash(password, 10);
+      await storage.updateUser(email, {
+        passwordHash,
+        resetPasswordToken: null,
+        resetPasswordTokenExpiry: null,
+      });
+
+      res.json({ success: true, message: "Password has been reset successfully" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
   // ============ SMART GRID SIMULATOR ENDPOINTS ============
   
   app.get("/api/simulator/measurements", isAuthenticated, async (req, res) => {

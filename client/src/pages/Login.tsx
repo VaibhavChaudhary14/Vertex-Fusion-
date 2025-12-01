@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SiGoogle } from "react-icons/si";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
@@ -23,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function Login() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
@@ -131,12 +132,34 @@ export default function Login() {
                     <FormItem>
                       <FormLabel className="text-xs">Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="••••••••" type="password" {...field} data-testid="input-password" />
+                        <div className="relative">
+                          <Input
+                            placeholder="••••••••"
+                            type={showPassword ? "text" : "password"}
+                            {...field}
+                            data-testid="input-password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
+
+                <div className="flex items-center justify-between">
+                  <Link href="/forgot-password">
+                    <Button variant="link" size="sm" className="p-0 h-auto font-normal text-xs text-muted-foreground hover:text-foreground">
+                      Forgot password?
+                    </Button>
+                  </Link>
+                </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-sign-in">
                   {isLoading ? "Signing in..." : "Sign In"}

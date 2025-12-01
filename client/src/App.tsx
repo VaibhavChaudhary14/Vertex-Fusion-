@@ -13,6 +13,8 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import VirtualLab from "@/pages/VirtualLab";
 import Knowledge from "@/pages/Knowledge";
@@ -72,6 +74,12 @@ function Router() {
         </Route>
         <Route path="/login">
           {() => <Login />}
+        </Route>
+        <Route path="/forgot-password">
+          {() => <ForgotPassword />}
+        </Route>
+        <Route path="/reset-password">
+          {() => <ResetPassword />}
         </Route>
         <Route component={NotFound} />
       </Switch>
