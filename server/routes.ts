@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
+import passport from "passport";
 
 const genAI = process.env.GEMINI_API_KEY 
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
