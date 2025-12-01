@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { sendEmail } from "./sendgridUtil";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
 import passport from "passport";
@@ -270,22 +271,13 @@ Format responses with clear structure using markdown when helpful.`;
         isEmailVerified: true,
       });
       
-      // Send verification email via SendGrid (optional - gracefully degrade if not configured)
-      if (process.env.SENDGRID_API_KEY) {
-        try {
-          const sgMail = require("@sendgrid/mail");
-          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-          const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
-          await sgMail.send({
-            to: email,
-            from: "noreply@gridguardian.ai",
-            subject: "Verify your Vertex Fusion account",
-            html: `<p>Welcome ${firstName}!</p><p><a href="${verificationLink}">Verify your email</a></p>`,
-          });
-        } catch (emailError) {
-          console.error("SendGrid email error:", emailError);
-        }
-      }
+      // Send verification email via SendGrid
+      const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
+      await sendEmail(
+        email,
+        "Verify your Vertex Fusion account",
+        `<p>Welcome ${firstName}!</p><p><a href="${verificationLink}">Verify your email</a></p>`
+      );
 
       // Auto-login the user after signup
       req.logIn({ ...user, isLocal: true }, (err) => {
@@ -368,22 +360,12 @@ Format responses with clear structure using markdown when helpful.`;
       });
 
       // Send reset email via SendGrid
-      if (process.env.SENDGRID_API_KEY) {
-        try {
-          const sgMail = require("@sendgrid/mail");
-          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-          const resetLink = `${req.protocol}://${req.hostname}/reset-password?token=${resetToken}&email=${email}`;
-          await sgMail.send({
-            to: email,
-            from: "noreply@gridguardian.ai",
-            subject: "Reset your Vertex Fusion password",
-            html: `<p>Click the link below to reset your password. This link expires in 24 hours.</p><p><a href="${resetLink}">Reset Password</a></p>`,
-          });
-        } catch (emailError) {
-          console.error("SendGrid email error:", emailError);
-          // Still return success as token was created
-        }
-      }
+      const resetLink = `${req.protocol}://${req.hostname}/reset-password?token=${resetToken}&email=${email}`;
+      await sendEmail(
+        email,
+        "Reset your Vertex Fusion password",
+        `<p>Click the link below to reset your password. This link expires in 24 hours.</p><p><a href="${resetLink}">Reset Password</a></p>`
+      );
 
       res.json({ success: true, message: "If the email exists, a reset link has been sent" });
     } catch (error) {
