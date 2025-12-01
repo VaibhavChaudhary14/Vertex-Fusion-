@@ -8,6 +8,7 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
 
 const getOidcConfig = memoize(
@@ -44,7 +45,7 @@ export function getSession() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         maxAge: sessionTtl,
       },
     });
@@ -57,7 +58,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
     },
   });
@@ -88,75 +89,148 @@ export async function setupAuth(app: Express) {
   
   const config = await getOidcConfig();
   
-  // If Replit Auth is not available (e.g., on Render), skip auth setup
-  if (!config) {
-    return;
-  }
-  
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const verify: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
-  };
+  // Local Strategy for email/password auth
+  passport.use(
+    new LocalStrategy(
+      {
+        usernameField: "email",
+        passwordField: "password",
+      },
+      async (email, password, done) => {
+        try {
+          const user = await storage.getUser(email);
+          if (!user || !user.passwordHash) {
+            return done(null, false, { message: "Invalid credentials" });
+          }
+          const isValid = await bcrypt.compare(password, user.passwordHash);
+          if (!isValid) {
+            return done(null, false, { message: "Invalid credentials" });
+          }
+          if (!user.isEmailVerified) {
+            return done(null, false, { message: "Email not verified" });
+          }
+          return done(null, { ...user, isLocal: true });
+        } catch (error) {
+          return done(error);
+        }
+      }
+    )
+  );
 
-  const registeredStrategies = new Set<string>();
-
-  const ensureStrategy = (domain: string) => {
-    const strategyName = `replitauth:${domain}`;
-    if (!registeredStrategies.has(strategyName)) {
-      const strategy = new Strategy(
+  // Google OAuth Strategy
+  if (process.env.GOOGLE_OAUTH_CLIENT_ID && process.env.GOOGLE_OAUTH_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
         {
-          name: strategyName,
-          config,
-          scope: "openid email profile offline_access",
-          callbackURL: `https://${domain}/api/callback`,
+          clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+          callbackURL: "/api/auth/google/callback",
         },
-        verify,
-      );
-      passport.use(strategy);
-      registeredStrategies.add(strategyName);
-    }
-  };
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            let user = await storage.getUser(profile.id);
+            if (!user) {
+              user = await storage.upsertUser({
+                id: profile.id,
+                email: profile.emails?.[0]?.value,
+                firstName: profile.name?.givenName,
+                lastName: profile.name?.familyName,
+                profileImageUrl: profile.photos?.[0]?.value,
+                isEmailVerified: true,
+              });
+            }
+            return done(null, { ...user, isGoogle: true });
+          } catch (error) {
+            return done(error);
+          }
+        }
+      )
+    );
+  }
 
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+  passport.serializeUser((user: any, cb) => cb(null, user));
+  passport.deserializeUser((user: any, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
-  });
+  // Replit Auth routes (if available)
+  if (config) {
+    const verify: VerifyFunction = async (
+      tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
+      verified: passport.AuthenticateCallback
+    ) => {
+      const user = {};
+      updateUserSession(user, tokens);
+      await upsertUser(tokens.claims());
+      verified(null, user);
+    };
 
-  app.get("/api/callback", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      failureRedirect: "/",
-    })(req, res, (err: any) => {
-      if (err) return next(err);
-      res.redirect("/dashboard");
+    const registeredStrategies = new Set<string>();
+
+    const ensureStrategy = (domain: string) => {
+      const strategyName = `replitauth:${domain}`;
+      if (!registeredStrategies.has(strategyName)) {
+        const strategy = new Strategy(
+          {
+            name: strategyName,
+            config,
+            scope: "openid email profile offline_access",
+            callbackURL: `https://${domain}/api/callback`,
+          },
+          verify,
+        );
+        passport.use(strategy);
+        registeredStrategies.add(strategyName);
+      }
+    };
+
+    app.get("/api/login", (req, res, next) => {
+      ensureStrategy(req.hostname);
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        prompt: "login consent",
+        scope: ["openid", "email", "profile", "offline_access"],
+      })(req, res, next);
     });
-  });
 
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+    app.get("/api/callback", (req, res, next) => {
+      ensureStrategy(req.hostname);
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        failureRedirect: "/",
+      })(req, res, (err: any) => {
+        if (err) return next(err);
+        res.redirect("/dashboard");
+      });
     });
-  });
+
+    app.get("/api/logout", (req, res) => {
+      req.logout(() => {
+        res.redirect(
+          client.buildEndSessionUrl(config, {
+            client_id: process.env.REPL_ID!,
+            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          }).href
+        );
+      });
+    });
+  }
+
+  // Google OAuth routes
+  if (process.env.GOOGLE_OAUTH_CLIENT_ID) {
+    app.get(
+      "/api/auth/google",
+      passport.authenticate("google", { scope: ["profile", "email"] })
+    );
+
+    app.get(
+      "/api/auth/google/callback",
+      passport.authenticate("google", { failureRedirect: "/" }),
+      (req, res) => {
+        res.redirect("/dashboard");
+      }
+    );
+  }
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {

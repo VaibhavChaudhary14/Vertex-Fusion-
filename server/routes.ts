@@ -239,25 +239,96 @@ Format responses with clear structure using markdown when helpful.`;
 
   app.post("/api/auth/signup", async (req, res) => {
     try {
+      const bcrypt = await import("bcryptjs");
       const { email, firstName, lastName, password } = req.body;
       
       if (!email || !firstName || !lastName || !password) {
         return res.status(400).json({ message: "Missing required fields" });
       }
       
-      await storage.upsertUser({
+      const existingUser = await storage.getUser(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+      
+      const passwordHash = await bcrypt.default.hash(password, 10);
+      const emailVerificationToken = Math.random().toString(36).substring(2, 15);
+      
+      const user = await storage.upsertUser({
         id: email,
         email,
         firstName,
         lastName,
         profileImageUrl: null,
+        passwordHash,
+        emailVerificationToken,
+        isEmailVerified: false,
       });
       
-      res.json({ success: true, message: "Account created successfully" });
+      // Send verification email via SendGrid (optional - gracefully degrade if not configured)
+      if (process.env.SENDGRID_API_KEY) {
+        try {
+          const sgMail = require("@sendgrid/mail");
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          const verificationLink = `${req.protocol}://${req.hostname}/api/auth/verify?token=${emailVerificationToken}&email=${email}`;
+          await sgMail.send({
+            to: email,
+            from: "noreply@gridguardian.ai",
+            subject: "Verify your Vertex Fusion account",
+            html: `<p>Welcome ${firstName}!</p><p><a href="${verificationLink}">Verify your email</a></p>`,
+          });
+        } catch (emailError) {
+          console.error("SendGrid email error:", emailError);
+        }
+      }
+      
+      res.json({ success: true, message: "Account created. Please check your email to verify.", userId: user.id });
     } catch (error) {
       console.error("Signup error:", error);
       res.status(500).json({ message: "Failed to create account" });
     }
+  });
+
+  app.get("/api/auth/verify", async (req, res) => {
+    try {
+      const { token, email } = req.query;
+      
+      if (!token || !email) {
+        return res.status(400).json({ message: "Missing verification parameters" });
+      }
+      
+      const user = await storage.getUser(email as string);
+      if (!user || user.emailVerificationToken !== token) {
+        return res.status(400).json({ message: "Invalid verification token" });
+      }
+      
+      await storage.updateUser(email as string, {
+        isEmailVerified: true,
+        emailVerificationToken: null,
+      });
+      
+      res.json({ success: true, message: "Email verified successfully. You can now log in." });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Failed to verify email" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Authentication error" });
+      }
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Login failed" });
+        }
+        res.json({ success: true, user });
+      });
+    })(req, res, next);
   });
 
   // ============ SMART GRID SIMULATOR ENDPOINTS ============
