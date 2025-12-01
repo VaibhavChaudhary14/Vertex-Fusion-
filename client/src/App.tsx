@@ -46,23 +46,6 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 }
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center space-y-4">
-          <div className="animate-pulse text-muted-foreground text-lg">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    window.location.href = "/api/login";
-    return null;
-  }
-
   return (
     <AuthenticatedLayout>
       <Component />
@@ -73,8 +56,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Landing} />
-      <Route path="/signup" component={SignUp} />
+      <Route path="/" component={Dashboard} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
