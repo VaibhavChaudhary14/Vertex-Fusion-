@@ -51,3 +51,9 @@ outputType = "webview"
 
 [agent]
 integrations = ["javascript_gemini:1.0.0", "javascript_database:1.0.0", "javascript_websocket:1.0.0", "javascript_log_in_with_replit:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+MAILTRAP_HOST = "sandbox.smtp.mailtrap.io"
+MAILTRAP_PORT = "2525"
