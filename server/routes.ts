@@ -143,7 +143,6 @@ export async function registerRoutes(
 
       if (genAI) {
         try {
-          const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
           const systemPrompt = `You are an AI Threat Analyst specialized in smart power grid cybersecurity. 
 You have deep expertise in:
 - Graph Neural Networks (GNN) for intrusion detection
@@ -156,7 +155,11 @@ You have deep expertise in:
 Provide concise, actionable advice. Reference specific attack detection methods and mitigation strategies when relevant.
 Format responses with clear structure using markdown when helpful.`;
 
-          const result = await model.generateContent(systemPrompt + "\n\nUser question: " + message);
+          const result = await genAI.generateContent({
+            contents: [
+              { role: "user", parts: [{ text: systemPrompt + "\n\nUser question: " + message }] }
+            ]
+          });
 
           response = result.response?.text() || "I apologize, but I couldn't generate a response. Please try again.";
         } catch (aiError) {
