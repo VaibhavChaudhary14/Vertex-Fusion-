@@ -262,7 +262,7 @@ Format responses with clear structure using markdown when helpful.`;
         profileImageUrl: null,
         passwordHash,
         emailVerificationToken,
-        isEmailVerified: false,
+        isEmailVerified: true,
       });
       
       // Send verification email via SendGrid (optional - gracefully degrade if not configured)
@@ -270,7 +270,7 @@ Format responses with clear structure using markdown when helpful.`;
         try {
           const sgMail = require("@sendgrid/mail");
           sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-          const verificationLink = `${req.protocol}://${req.hostname}/api/auth/verify?token=${emailVerificationToken}&email=${email}`;
+          const verificationLink = `${req.protocol}://${req.hostname}/verify-email?token=${emailVerificationToken}&email=${email}`;
           await sgMail.send({
             to: email,
             from: "noreply@gridguardian.ai",
@@ -281,8 +281,15 @@ Format responses with clear structure using markdown when helpful.`;
           console.error("SendGrid email error:", emailError);
         }
       }
-      
-      res.json({ success: true, message: "Account created. Please check your email to verify.", userId: user.id });
+
+      // Auto-login the user after signup
+      req.logIn({ ...user, isLocal: true }, (err) => {
+        if (err) {
+          console.error("Auto-login error:", err);
+          return res.status(200).json({ success: true, message: "Account created successfully", userId: user.id, requiresLogin: true });
+        }
+        res.json({ success: true, message: "Account created successfully", userId: user.id });
+      });
     } catch (error) {
       console.error("Signup error:", error);
       res.status(500).json({ message: "Failed to create account" });

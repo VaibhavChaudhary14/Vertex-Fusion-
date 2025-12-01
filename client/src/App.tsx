@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import SignUp from "@/pages/SignUp";
+import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import VirtualLab from "@/pages/VirtualLab";
 import Knowledge from "@/pages/Knowledge";
@@ -68,6 +69,9 @@ function Router() {
         </Route>
         <Route path="/signup">
           {() => <SignUp />}
+        </Route>
+        <Route path="/login">
+          {() => <Login />}
         </Route>
         <Route component={NotFound} />
       </Switch>

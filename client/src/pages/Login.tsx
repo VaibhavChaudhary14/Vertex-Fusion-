@@ -12,39 +12,30 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Shield, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const signUpSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
 });
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function SignUp() {
+export default function Login() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
 
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
-      firstName: "",
-      lastName: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (data: SignUpFormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -53,7 +44,7 @@ export default function SignUp() {
       if (!response.ok) {
         const error = await response.json();
         toast({
-          title: "Sign up failed",
+          title: "Sign in failed",
           description: error.message || "Please try again",
           variant: "destructive",
         });
@@ -61,7 +52,7 @@ export default function SignUp() {
       }
 
       toast({
-        title: "Account created!",
+        title: "Welcome back!",
         description: "Redirecting to dashboard...",
       });
       
@@ -71,7 +62,7 @@ export default function SignUp() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: "Failed to sign in. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,41 +99,12 @@ export default function SignUp() {
                 </Button>
               </Link>
             </div>
-            <CardTitle className="text-2xl">Create Account</CardTitle>
-            <CardDescription>Join Vertex Fusion for advanced grid security</CardDescription>
+            <CardTitle className="text-2xl">Sign In</CardTitle>
+            <CardDescription>Welcome back to Vertex Fusion</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John" {...field} data-testid="input-firstname" />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Doe" {...field} data-testid="input-lastname" />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
                   control={form.control}
                   name="email"
@@ -171,22 +133,8 @@ export default function SignUp() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input placeholder="••••••••" type="password" {...field} data-testid="input-confirm-password" />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-create-account">
-                  {isLoading ? "Creating account..." : "Create Account"}
+                <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-sign-in">
+                  {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
             </Form>
@@ -201,17 +149,17 @@ export default function SignUp() {
             </div>
 
             <a href="/api/auth/google">
-              <Button variant="outline" className="w-full" data-testid="button-signup-google">
+              <Button variant="outline" className="w-full" data-testid="button-signin-google">
                 <SiGoogle className="h-4 w-4 mr-2" />
-                Sign up with Google
+                Sign in with Google
               </Button>
             </a>
 
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login">
-                <Button variant="link" size="sm" className="p-0 h-auto" data-testid="link-sign-in">
-                  Sign in
+              Don't have an account?{" "}
+              <Link href="/signup">
+                <Button variant="link" size="sm" className="p-0 h-auto" data-testid="link-sign-up">
+                  Sign up
                 </Button>
               </Link>
             </p>
