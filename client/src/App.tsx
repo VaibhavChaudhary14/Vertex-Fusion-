@@ -54,6 +54,26 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 }
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="w-full h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/">
+          {() => <Landing />}
+        </Route>
+        <Route path="/signup">
+          {() => <SignUp />}
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/">
