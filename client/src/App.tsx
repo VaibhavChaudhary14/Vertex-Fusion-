@@ -103,6 +103,29 @@ function Router() {
       <Route path="/">
         {() => <Landing />}
       </Route>
+      {/* Authentication routes - temporarily redirect to dashboard */}
+      <Route path="/login">
+        {() => <Login />}
+      </Route>
+      <Route path="/signup">
+        {() => <SignUp />}
+      </Route>
+      <Route path="/forgot-password">
+        {() => <ForgotPassword />}
+      </Route>
+      <Route path="/reset-password">
+        {() => <ResetPassword />}
+      </Route>
+      <Route path="/verify-email">
+        {() => <VerifyEmail />}
+      </Route>
+      <Route path="/check-email">
+        {() => {
+          const email = typeof window !== "undefined" ? sessionStorage.getItem("signupEmail") : undefined;
+          return <CheckEmail email={email || "your email"} />;
+        }}
+      </Route>
+      {/* Dashboard and app routes */}
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
