@@ -6,10 +6,21 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "./sendgridUtil";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
 import passport from "passport";
+import { randomBytes } from "crypto";
 
 const genAI = process.env.GEMINI_API_KEY 
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   : null;
+
+// Secure token generation helper
+function generateSecureToken(length: number = 13): string {
+  return randomBytes(Math.ceil(length * 3 / 4))
+    .toString('base64')
+    .slice(0, length)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -19,10 +30,8 @@ export async function registerRoutes(
 
   app.get("/api/auth/user", isAuthenticated, async (req, res) => {
     try {
+      const userId = (req as any).userId;
       const userAuth = req.user as any;
-      
-      // Get userId based on auth type
-      let userId = userAuth?.id || userAuth?.claims?.sub;
       
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -254,7 +263,7 @@ Format responses with clear structure using markdown when helpful.`;
       }
       
       const passwordHash = await bcrypt.default.hash(password, 10);
-      const emailVerificationToken = Math.random().toString(36).substring(2, 15);
+      const emailVerificationToken = generateSecureToken(32);
       
       console.log(`📝 Creating user: ${email}`);
       const user = await storage.upsertUser({
@@ -332,7 +341,7 @@ Format responses with clear structure using markdown when helpful.`;
       }
 
       // Generate new verification token
-      const newToken = Math.random().toString(36).substring(2, 15);
+      const newToken = generateSecureToken(32);
       
       await storage.updateUser(email, {
         emailVerificationToken: newToken,
@@ -398,7 +407,7 @@ Format responses with clear structure using markdown when helpful.`;
         return res.json({ success: true, message: "If the email exists, a reset link has been sent" });
       }
 
-      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetToken = generateSecureToken(32);
       const expiryTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
       await storage.updateUser(email, {

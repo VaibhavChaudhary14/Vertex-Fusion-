@@ -68,8 +68,8 @@ app.use((req, res, next) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
 
+      log(`Error ${status}: ${message}`, "error");
       res.status(status).json({ message });
-      throw err;
     });
 
     // importantly only setup vite in development and after
@@ -95,14 +95,20 @@ app.use((req, res, next) => {
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
     const port = parseInt(process.env.PORT || "5050", 10);
+    // Use localhost on Windows, 0.0.0.0 on Unix systems
+    const host = process.platform === "win32" ? "localhost" : "0.0.0.0";
+    const listenOptions: any = {
+      port,
+      host,
+    };
+    // reusePort is not supported on Windows
+    if (process.platform !== "win32") {
+      listenOptions.reusePort = true;
+    }
     httpServer.listen(
-      {
-        port,
-        host: "0.0.0.0",
-        reusePort: true,
-      },
+      listenOptions,
       () => {
-        log(`serving on port ${port}`);
+        log(`serving on ${host}:${port}`);
       },
     );
   } catch (error) {
